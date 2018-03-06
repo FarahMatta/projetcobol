@@ -255,7 +255,43 @@ STOP RUN.
         END-PERFORM
       END-START
       CLOSE fclient.
-        
+      
+      AJOUT_ARTICLE.
+      
+      *> id à définir encore. On récuppére l'id d'une certaine maniére puis on vérifie si elle existe ou pas.
+      *>Si oui on met à jour les stock. Sinon on crée un nouveau article
+      OPEN I-O fart
+      
+      MOVE Wident TO far_id
+      READ fart
+      INVALID KEY
+        DISPLAY 'Veuillez saisir les informations de l'article'
+        DISPLAY ' nom de l`article'
+        ACCEPT far_nom
+        DISPLAY 'le prix de l`article'
+        ACCEPT far_prix
+        DISPLAY 'couleur de l`article'
+        ACCEPT far_couleur
+        DISPLAY 'Taille de l`article'
+        PERFORM WITH TEST AFTER UNTIL far_type < 7
+          DISPLAY ' Type de l`article: 1:hautFemme, 2:basFemme,'
+          DISPLAY ' 3:AccesoireFemme, 4:HautHomme, 5:basHomme,'
+          DISPLAY ' 6:AccesoireHomme'
+          ACCEPT far_type
+        END-PERFORM
+        DISPLAY 'La quantité en stock'
+        ACCEPT far_stock
+        REWRITE artTamp END-REWRITE
+      NOT INVALID KEY
+        PERFORM GERER_STOCK()
+      END-READ
+      CLOSE fart.
+      
+
+      
+      
+      
+      
       
       
         
