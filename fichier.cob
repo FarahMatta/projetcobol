@@ -176,7 +176,7 @@ STOP RUN.
       SUPPRIMER_CLIENT.
       
       OPEN I-O fclient
-      DISPLAY 'Veuillez saisir l'identifiant du client à supprimer'
+      DISPLAY 'Veuillez saisir l`identifiant du client à supprimer'
       ACCEPT Wident
       MOVE Wident TO fcl_id
       READ fclient
@@ -195,7 +195,7 @@ STOP RUN.
         DISPLAY 'Saisissez un numero selon la modification souhaitée'
         DISPLAY '1:nom,2:prenom,3:Mail, 4:Adresse, 5:Fidelite, 0:quitter'
         ACCEPT Wok 
-        DISPLAY ' Veuillez saisir l'identifiant du client concerné'
+        DISPLAY ' Veuillez saisir l`identifiant du client concerné'
         ACCEPT Wident
         MOVE Wident TO fcl_id
         READ fclient 
