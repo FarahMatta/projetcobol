@@ -198,7 +198,7 @@ STOP RUN.
         DISPLAY ' Veuillez saisir l'identifiant du client concerné'
         ACCEPT Wident
         MOVE Wident TO fcl_id
-        READ fclient
+        READ fclient 
         INVALID KEY
           DISPLAY 'Client inexistant'
         NOT INVALID KEY
@@ -230,6 +230,33 @@ STOP RUN.
         END-READ 
       END-PERFORM
       CLOSE fclient.
+      
+      
+      RECHERCHE_FIDELITE.
+      
+      OPEN OUPUT fclient
+      MOVE 1 TO fcl_fidele
+      MOVE 0 TO Wfin
+      START fclient KEY = fcl_fidele
+      INVALID KEY
+        DISPLAY ' clients fidéles inexistants'
+      NOT INVALID KEY
+        PERFORM WITH TEST AFTER UNTIL Wfin=1
+          READ fclient NEXT
+          AT END 
+            MOVE 1 TO Wfin
+          NOT AT END
+            IF fcl_fidele = 1 THEN
+              DISPLAY 'client',fcl_id,': ',fcl_nom,fcl_prenom,fcl_mail
+            ELSE
+              MOVE 1 TO Wfin
+            END-IF
+          END-READ
+        END-PERFORM
+      END-START
+      CLOSE fclient.
+        
+      
       
         
       
