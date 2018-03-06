@@ -77,7 +77,11 @@ WORKING-STORAGE SECTION.
   77 fart_stat PIC 9(2).
   77 Wfin PIC 9.
   77 Wident PIC 9.
-  
+  77 Wf PIC 9(2).
+  77 Wok PIC 9(2).
+  77 Wpre PIC X(30).
+  77 Wnom PIC X(30).
+      
 PROCEDURE DIVISION.
 
 OPEN I-O fclient
@@ -104,7 +108,7 @@ IF fart_stat =35 THEN
 END-IF
 CLOSE fart
 
-PERFORM WITH TEST AFTER UNTIL wf=0
+PERFORM WITH TEST AFTER UNTIL Wf=0
 DISPLAY 'Saisissez le numero de la fonction:'
 DISPLAY '1:ajout_client, 2:supprimer_client, 3:modifier_infoCl,'
 DISPLAY '4:Recherche_fidlite, 5:effectuer_achat, 6:Echange,'
@@ -171,8 +175,61 @@ STOP RUN.
       
       SUPPRIMER_CLIENT.
       
+      OPEN I-O fclient
       DISPLAY 'Veuillez saisir l'identifiant du client à supprimer'
       ACCEPT Wident
+      MOVE Wident TO fcl_id
+      READ fclient
+      INVALID KEY 
+        DISPLAY 'Client inexistant'
+      NOT INVALID KEY
+        DELETE fclient RECORD
+      END-READ
+      CLOSE fclient.
+      
+      
+      MODIFIER_INFOCL.
+      
+      OPEN I-O fclient
+      PERFORM WITH TEST AFTER UNTIL Wok=0
+        DISPLAY 'Saisissez un numero selon la modification souhaitée'
+        DISPLAY '1:nom,2:prenom,3:Mail, 4:Adresse, 5:Fidelite, 0:quitter'
+        ACCEPT Wok 
+        DISPLAY ' Veuillez saisir l'identifiant du client concerné'
+        ACCEPT Wident
+        MOVE Wident TO fcl_id
+        READ fclient
+        INVALID KEY
+          DISPLAY 'Client inexistant'
+        NOT INVALID KEY
+          EVALUATE Wok
+          WHEN 1
+            DISPLAY ' Veuillez saisir le nouveau nom'
+            ACCEPT fcl_nom
+            REWRITE clientTamp END-REWRITE
+          WHEN 2
+            DISPLAY ' Veuillez saisir le nouveau prenom'
+            ACCEPT fcl_prenom
+            REWRITE clientTamp END-REWRITE
+          WHEN 3
+            DISPLAY ' Veuillez saisir le nouveau mail'
+            ACCEPT fcl_mail
+            REWRITE clientTamp END-REWRITE
+          WHEN 4
+            DISPLAY ' Veuillez saisir la nouvelle adresse'
+            ACCEPT fcl_adresse
+            REWRITE clientTamp END-REWRITE
+          WHEN 5
+            PERFORM WITH TEST AFTER UNTIL fcl_fidele < 2
+              DISPLAY ' Veuillez saisir la nouvelle état du fidelite'
+              DISPLAY '(1:Fidele, 0:NonFidele)'
+              ACCEPT fcl_fidele
+            END-PERFORM
+            REWRITE clientTamp END-REWRITE
+        END-EVALUATE
+        END-READ 
+      END-PERFORM
+      CLOSE fclient.
       
         
       
