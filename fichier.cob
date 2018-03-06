@@ -76,7 +76,7 @@ WORKING-STORAGE SECTION.
   77 fcmd_stat PIC 9(2).
   77 fart_stat PIC 9(2).
   77 Wfin PIC 9.
-
+  77 Wident PIC 9.
   
 PROCEDURE DIVISION.
 
@@ -146,6 +146,38 @@ DISPLAY '13: Gerer_stock,14:modifier_commande, 0:quitter'
 END-PERFORM
 STOP RUN.
 
+        AJOUT_CLIENT.
+      *>Il reste la saisie de l'id (il faut regarder selon ce que alexis a fait)
+        
+        DISPLAY 'Veuillez saisir les informations de la competition'
+        DISPLAY 'Nom du client'
+        ACCEPT fcl_nom
+        DISPLAY 'Prenom du client'
+        ACCEPT fcl_prenom
+        DISPLAY 'Mail du client'
+        ACCEPT fcl_mail
+        DISPLAY ' Adresse du client'
+        ACCEPT fcl_adresse
+        MOVE 0 TO Wfin
+        PERFORM WITH TEST AFTER UNTIL fcl_fidele < 2
+          DISPLAY' Saisir 1 si le client a choisi notre programme de fidelité, 0 sinon'
+          ACCEPT fcl_fidele
+        END-PERFORM
+        
+        OPEN I-O fclient
+        WRITE clientTamp END-WRITE
+        CLOSE fclient.
+      
+      
+      SUPPRIMER_CLIENT.
+      
+      DISPLAY 'Veuillez saisir l'identifiant du client à supprimer'
+      ACCEPT Wident
+      
+        
+      
+        
+      
 
 
 
