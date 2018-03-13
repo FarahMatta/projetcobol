@@ -1,16 +1,16 @@
 IDENTIFICATION DIVISION.
   PROGRAM-ID.fichier.
-  
+
 ENVIRONMENT DIVISION.
 INPUT-OUTPUT SECTION.
-FILE-CONTROL.       
+FILE-CONTROL.
   SELECT fclient ASSIGN TO "clients.dat"
   ORGANIZATION INDEXED
   ACCESS MODE IS DYNAMIC
   RECORD KEY fcl_id
   ALTERNATE RECORD KEY fcl_fidele WITH DUPLICATES
   FILE STATUS IS fclient_stat.
-  
+
   SELECT fachat ASSIGN TO "achats.dat"
   ORGANIZATION INDEXED
   ACCESS MODE IS DYNAMIC
@@ -18,14 +18,14 @@ FILE-CONTROL.
   ALTERNATE RECORD KEY fa_idcmd WITH DUPLICATES
   ALTERNATE RECORD KEY fa_idart
   FILE STATUS IS fachat_stat.
-  
+
   SELECT fcmd ASSIGN TO "commandes.dat"
   ORGANIZATION INDEXED
   ACCESS MODE IS DYNAMIC
   RECORD KEY fco_id
   ALTERNATE RECORD KEY fco_idClient WITH DUPLICATES
   FILE STATUS IS fcmd_stat.
-  
+
   SELECT fart ASSIGN TO "articles.dat"
   ORGANIZATION INDEXED
   ACCESS MODE IS DYNAMIC
@@ -34,7 +34,12 @@ FILE-CONTROL.
   ALTERNATE RECORD KEY far_taille WITH DUPLICATES
   ALTERNATE RECORD KEY far_type WITH DUPLICATES
   FILE STATUS IS fart_stat.
-  
+
+  SELECT fdonnees ASSIGN TO "donnees.dat"
+  ORGANIZATION SEQUENTIAL
+  ACCESS IS SEQUENTIAL
+  FILE STATUS IS fdo_stat.
+
 DATA DIVISION.
 FILE SECTION.
 FD fclient.
@@ -45,21 +50,21 @@ FD fclient.
     02 fcl_mail PIC X(30).
     02 fcl_adresse PIC X(30).
     02 fcl_fidele PIC 9.
-    
+
 FD fachat.
   01 achatTamp.
     02 fa_id PIC 9.
     02 fa_idcmd PIC 9.
     02 fa_idart PIC 9.
     02 fa_quantite PIC 9.
-    
+
 FD fcmd.
   01 cmdTamp.
     02 fco_id PIC 9.
     02 fco_idClient PIC 9.
     02 fco_nbArticles PIC 9.
     02 fco_prix PIC 9.
-    
+
 FD fart.
   01 artTamp.
     02 far_id PIC 9.
@@ -69,15 +74,28 @@ FD fart.
     02 far_taille PIC X(30).
     02 far_type PIC X(30).
     02 far_stock PIC 9.
-    
+
+FD fdonnees.
+01 donneesTamp.
+  02 fdo_achat PIC 9(15).
+  02 fdo_commande PIC 9(15).
+  02 fdo_client PIC 9(15).
+  02 fdo_article PIC 9(15).
+  02 fdo_stat PIC 9(15).
+
+
 WORKING-STORAGE SECTION.
   77 fclient_stat PIC 9(2).
   77 fachat_stat PIC 9(2).
   77 fcmd_stat PIC 9(2).
   77 fart_stat PIC 9(2).
   77 Wfin PIC 9.
+  77 do_achat PIC 9(15).
+  77 do_commande PIC 9(15).
+  77 do_client PIC 9(15).
+  77 do_article PIC 9(15).
 
-  
+
 PROCEDURE DIVISION.
 
 OPEN I-O fclient
@@ -140,12 +158,78 @@ DISPLAY '13: Gerer_stock,14:modifier_commande, 0:quitter'
         WHEN 13
                 PERFORM GERER_STOCK
         WHEN 14
-                PERFORM MODIFIER_COMMANDE               
+                PERFORM MODIFIER_COMMANDE
         END-EVALUATE
 
 END-PERFORM
+
+AJOUT_ID_CLIENT.
+OPEN INPUT fdonnees
+READ fdonnees
+ADD 1 TO fdo_client
+MOVE fdo_client TO do_client
+MOVE fdo_achat TO do_achat
+MOVE fdo_commande TO do_commande
+MOVE fdo_article TO do_article
+CLOSE fdonnees
+OPEN OUTPUT fdonnees
+MOVE fdo_client TO do_client
+MOVE fdo_achat TO do_achat
+MOVE fdo_commande TO do_commande
+MOVE fdo_article TO do_article
+WRITE donneesTamp
+CLOSE fdonnees.
+
+AJOUT_ID_ARTICLE.
+OPEN INPUT fdonnees
+READ fdonnees
+ADD 1 TO fdo_article
+MOVE fdo_client TO do_client
+MOVE fdo_achat TO do_achat
+MOVE fdo_commande TO do_commande
+MOVE fdo_article TO do_article
+CLOSE fdonnees
+OPEN OUTPUT fdonnees
+MOVE fdo_client TO do_client
+MOVE fdo_achat TO do_achat
+MOVE fdo_commande TO do_commande
+MOVE fdo_article TO do_article
+WRITE donneesTamp
+CLOSE fdonnees.
+
+AJOUT_ID_ACHAT.
+OPEN INPUT fdonnees
+READ fdonnees
+ADD 1 TO fdo_achat
+MOVE fdo_client TO do_client
+MOVE fdo_achat TO do_achat
+MOVE fdo_commande TO do_commande
+MOVE fdo_article TO do_article
+CLOSE fdonnees
+OPEN OUTPUT fdonnees
+MOVE fdo_client TO do_client
+MOVE fdo_achat TO do_achat
+MOVE fdo_commande TO do_commande
+MOVE fdo_article TO do_article
+WRITE donneesTamp
+CLOSE fdonnees.
+
+AJOUT_ID_COMMANDE.
+OPEN INPUT fdonnees
+READ fdonnees
+ADD 1 TO fdo_commande
+MOVE fdo_client TO do_client
+MOVE fdo_achat TO do_achat
+MOVE fdo_commande TO do_commande
+MOVE fdo_article TO do_article
+CLOSE fdonnees
+OPEN OUTPUT fdonnees
+MOVE fdo_client TO do_client
+MOVE fdo_achat TO do_achat
+MOVE fdo_commande TO do_commande
+MOVE fdo_article TO do_article
+WRITE donneesTamp
+CLOSE fdonnees.
+
+
 STOP RUN.
-
-
-
-
