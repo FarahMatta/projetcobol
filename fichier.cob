@@ -35,6 +35,11 @@ FILE-CONTROL.
   ALTERNATE RECORD KEY far_type WITH DUPLICATES
   FILE STATUS IS fart_stat.
 
+  SELECT fdonnees ASSIGN TO "donnees.dat"
+  ORGANIZATION SEQUENTIAL
+  ACCESS IS SEQUENTIAL
+  FILE STATUS IS fdo_stat.
+
 DATA DIVISION.
 FILE SECTION.
 FD fclient.
@@ -70,6 +75,15 @@ FD fart.
     02 far_type PIC X(30).
     02 far_stock PIC 9.
 
+FD fdonnees.
+01 donneesTamp.
+  02 fdo_achat PIC 9(15).
+  02 fdo_commande PIC 9(15).
+  02 fdo_client PIC 9(15).
+  02 fdo_article PIC 9(15).
+  02 fdo_stat PIC 9(15).
+
+
 WORKING-STORAGE SECTION.
   77 fclient_stat PIC 9(2).
   77 fachat_stat PIC 9(2).
@@ -82,6 +96,11 @@ WORKING-STORAGE SECTION.
   77 Wpre PIC X(30).
   77 Wnom PIC X(30).
   77 Widart PIC 9.
+  77 do_achat PIC 9(15).
+  77 do_commande PIC 9(15).
+  77 do_client PIC 9(15).
+  77 do_article PIC 9(15).
+
 
 PROCEDURE DIVISION.
 
@@ -149,7 +168,6 @@ DISPLAY '13: Gerer_stock,14:modifier_commande, 0:quitter'
         END-EVALUATE
 
 END-PERFORM
-STOP RUN.
 
         AJOUT_CLIENT.
         DISPLAY 'Veuillez saisir les informations de la competition'
@@ -298,3 +316,73 @@ STOP RUN.
 
       DISPLAY 'Veuillez saisir la quantité acheté'
       ACCEPT fa_quantite
+AJOUT_ID_CLIENT.
+OPEN INPUT fdonnees
+READ fdonnees
+ADD 1 TO fdo_client
+MOVE fdo_client TO do_client
+MOVE fdo_achat TO do_achat
+MOVE fdo_commande TO do_commande
+MOVE fdo_article TO do_article
+CLOSE fdonnees
+OPEN OUTPUT fdonnees
+MOVE fdo_client TO do_client
+MOVE fdo_achat TO do_achat
+MOVE fdo_commande TO do_commande
+MOVE fdo_article TO do_article
+WRITE donneesTamp
+CLOSE fdonnees.
+
+AJOUT_ID_ARTICLE.
+OPEN INPUT fdonnees
+READ fdonnees
+ADD 1 TO fdo_article
+MOVE fdo_client TO do_client
+MOVE fdo_achat TO do_achat
+MOVE fdo_commande TO do_commande
+MOVE fdo_article TO do_article
+CLOSE fdonnees
+OPEN OUTPUT fdonnees
+MOVE fdo_client TO do_client
+MOVE fdo_achat TO do_achat
+MOVE fdo_commande TO do_commande
+MOVE fdo_article TO do_article
+WRITE donneesTamp
+CLOSE fdonnees.
+
+AJOUT_ID_ACHAT.
+OPEN INPUT fdonnees
+READ fdonnees
+ADD 1 TO fdo_achat
+MOVE fdo_client TO do_client
+MOVE fdo_achat TO do_achat
+MOVE fdo_commande TO do_commande
+MOVE fdo_article TO do_article
+CLOSE fdonnees
+OPEN OUTPUT fdonnees
+MOVE fdo_client TO do_client
+MOVE fdo_achat TO do_achat
+MOVE fdo_commande TO do_commande
+MOVE fdo_article TO do_article
+WRITE donneesTamp
+CLOSE fdonnees.
+
+AJOUT_ID_COMMANDE.
+OPEN INPUT fdonnees
+READ fdonnees
+ADD 1 TO fdo_commande
+MOVE fdo_client TO do_client
+MOVE fdo_achat TO do_achat
+MOVE fdo_commande TO do_commande
+MOVE fdo_article TO do_article
+CLOSE fdonnees
+OPEN OUTPUT fdonnees
+MOVE fdo_client TO do_client
+MOVE fdo_achat TO do_achat
+MOVE fdo_commande TO do_commande
+MOVE fdo_article TO do_article
+WRITE donneesTamp
+CLOSE fdonnees.
+
+
+STOP RUN.
