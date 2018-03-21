@@ -72,7 +72,7 @@ FD fart.
     02 far_prix PIC 9.
     02 far_couleur PIC X(30).
     02 far_taille PIC X(30).
-    02 far_type PIC X(30).
+    02 far_type PIC 9.
     02 far_stock PIC 9.
 
 FD fdonnees.
@@ -168,8 +168,72 @@ DISPLAY '13: Gerer_stock,14:modifier_commande, 0:quitter'
         END-EVALUATE
 
 END-PERFORM
+STOP RUN.
+
+
+        AJOUT_ID_CLIENT.
+        OPEN I-O fdonnees
+        READ fdonnees
+        ADD 1 TO fdo_client
+        MOVE fdo_client TO do_client
+        MOVE fdo_achat TO do_achat
+        MOVE fdo_commande TO do_commande
+        MOVE fdo_article TO do_article
+        MOVE fdo_client TO do_client
+        MOVE fdo_achat TO do_achat
+        MOVE fdo_commande TO do_commande
+        MOVE fdo_article TO do_article
+        WRITE donneesTamp END-WRITE
+        CLOSE fdonnees.
+
+        AJOUT_ID_ARTICLE.
+        OPEN I-O fdonnees
+        READ fdonnees
+        ADD 1 TO fdo_article
+        MOVE fdo_client TO do_client
+        MOVE fdo_achat TO do_achat
+        MOVE fdo_commande TO do_commande
+        MOVE fdo_article TO do_article
+        MOVE fdo_client TO do_client
+        MOVE fdo_achat TO do_achat
+        MOVE fdo_commande TO do_commande
+        MOVE fdo_article TO do_article
+        WRITE donneesTamp END-WRITE
+        CLOSE fdonnees.
+
+        AJOUT_ID_ACHAT.
+        OPEN I-O fdonnees
+        READ fdonnees
+        ADD 1 TO fdo_achat
+        MOVE fdo_client TO do_client
+        MOVE fdo_achat TO do_achat
+        MOVE fdo_commande TO do_commande
+        MOVE fdo_article TO do_article
+        MOVE fdo_client TO do_client
+        MOVE fdo_achat TO do_achat
+        MOVE fdo_commande TO do_commande
+        MOVE fdo_article TO do_article
+        WRITE donneesTamp END-WRITE
+        CLOSE fdonnees.
+
+        AJOUT_ID_COMMANDE.
+        OPEN I-O fdonnees
+        READ fdonnees
+        ADD 1 TO fdo_commande
+        MOVE fdo_client TO do_client
+        MOVE fdo_achat TO do_achat
+        MOVE fdo_commande TO do_commande
+        MOVE fdo_article TO do_article
+        MOVE fdo_client TO do_client
+        MOVE fdo_achat TO do_achat
+        MOVE fdo_commande TO do_commande
+        MOVE fdo_article TO do_article
+        WRITE donneesTamp END-WRITE
+        CLOSE fdonnees.
 
         AJOUT_CLIENT.
+        PERFORM AJOUT_ID_CLIENT
+        MOVE do_client TO fcl_id
         DISPLAY 'Veuillez saisir les informations de la competition'
         DISPLAY 'Nom du client'
         ACCEPT fcl_nom
@@ -180,8 +244,8 @@ END-PERFORM
         DISPLAY ' Adresse du client'
         ACCEPT fcl_adresse
         MOVE 0 TO Wfin
-        PERFORM WITH TEST AFTER UNTIL fcl_fidele < 2
-          DISPLAY' Saisir 1 si le client a choisi notre programme de fidelité, 0 sinon'
+        PERFORM WITH TEST AFTER UNTIL fcl_fidele > 0 AND fcl_fidele < 3
+          DISPLAY' Saisir 1 si le client a choisi notre programme de fidelité, 2 sinon'
           ACCEPT fcl_fidele
         END-PERFORM
 
@@ -275,114 +339,131 @@ END-PERFORM
 
       AJOUT_ARTICLE.
 
-      *> id à définir encore. On récuppére l'id d'une certaine maniére puis on vérifie si elle existe ou pas.
-      *>Si oui on met à jour les stock. Sinon on crée un nouveau article
-      OPEN I-O fart
-
-      MOVE Wident TO far_id
-      READ fart
-      INVALID KEY
-        DISPLAY 'Veuillez saisir les informations de l article'
-        DISPLAY 'nom de l article'
-        ACCEPT far_nom
-        DISPLAY 'le prix de l article'
-        ACCEPT far_prix
-        DISPLAY 'couleur de l article'
-        ACCEPT far_couleur
-        DISPLAY 'Taille de l article'
-        PERFORM WITH TEST AFTER UNTIL far_type < 7
+      PERFORM AJOUT_ID_ARTICLE
+      MOVE do_article TO far_id
+      DISPLAY 'Veuillez saisir les informations de l article'
+      DISPLAY 'nom de l article'
+      ACCEPT far_nom
+      DISPLAY 'le prix de l article'
+      ACCEPT far_prix
+      DISPLAY 'couleur de l article'
+      ACCEPT far_couleur
+      PERFORM WITH TEST AFTER UNTIL far_taille = "xs" OR far_taille = "s" OR far_taille = "m" OR far_taille = "l" OR far_taille = "xl"
+        DISPLAY 'Taille de l article (xs,s,m,l,xl)'
+        ACCEPT far_taille
+      END-PERFORM
+      PERFORM WITH TEST AFTER UNTIL far_type < 7
           DISPLAY ' Type de l article: 1:hautFemme, 2:basFemme,'
           DISPLAY ' 3:AccesoireFemme, 4:HautHomme, 5:basHomme,'
           DISPLAY ' 6:AccesoireHomme'
           ACCEPT far_type
-        END-PERFORM
-        DISPLAY 'La quantité en stock'
-        ACCEPT far_stock
-        REWRITE artTamp END-REWRITE
+      END-PERFORM
+      DISPLAY 'La quantité en stock'
+      ACCEPT far_stock
+      OPEN I-O fart
+      WRITE artTamp END-WRITE
+      CLOSE fart.
+
+
+
+      GERER_STOCK.
+
+      OPEN I-O fart
+      DISPLAY 'Veuillez saisir les informations de l article à retourner'
+      DISPLAY 'l identifiant de l article'
+      ACCEPT Widart
+      MOVE Widart TO far_id
+      READ fart
+      INVALID KEY
+        DISPLAY 'Article inexistant'
       NOT INVALID KEY
-        PERFORM GERER_STOCK
+        PERFORM WITH TEST AFTER UNTIL Wok > 0 AND Wok < 3
+          DISPLAY 'Saisissez 1 pour un achat et 2 pour un retour'
+          ACCEPT Wok
+        END-PERFORM
+        DISPLAY 'Veuillez saisir la quantité acheté / retourné'
+        ACCEPT fa_quantite
+        EVALUATE Wok
+          WHEN 1
+            compute far_stock = far_stock - fa_quantite
+          WHEN 2
+            compute far_stock = far_stock + fa_quantite
+        END-EVALUATE
+        REWRITE artTamp END-REWRITE
       END-READ
       CLOSE fart.
 
       EFFECTUER_ACHAT.
 
+      OPEN INPUT fart
       DISPLAY 'Veuillez saisir les informations de l achat'
-      DISPLAY 'Veuillez saisir l id de la commande'
-      ACCEPT fa_idcmd
       DISPLAY 'Veuillez saisir l id de l article'
       ACCEPT Widart
-      OPEN fart INPUT
-      READ
-
-      DISPLAY 'Veuillez saisir la quantité acheté'
+      DISPLAY 'Veuillez saisir la quantité acheté / retourné'
       ACCEPT fa_quantite
-AJOUT_ID_CLIENT.
-OPEN INPUT fdonnees
-READ fdonnees
-ADD 1 TO fdo_client
-MOVE fdo_client TO do_client
-MOVE fdo_achat TO do_achat
-MOVE fdo_commande TO do_commande
-MOVE fdo_article TO do_article
-CLOSE fdonnees
-OPEN OUTPUT fdonnees
-MOVE fdo_client TO do_client
-MOVE fdo_achat TO do_achat
-MOVE fdo_commande TO do_commande
-MOVE fdo_article TO do_article
-WRITE donneesTamp
-CLOSE fdonnees.
+      MOVE Widart TO fa_idart
+      READ fart
+      INVALID KEY
+        DISPLAY 'Article inexistant'
+      NOT INVALID KEY
+        IF far_stock > fa_quantite OR far_stock = fa_quantite THEN
+          PERFORM AJOUT_ID_ACHAT
+          MOVE do_achat TO fa_id
+          DISPLAY 'Veuillez saisir l id de la commande'
+          ACCEPT fa_idcmd
+          DISPLAY 'Veuillez saisir la quantité acheté / retourné'
+          ACCEPT fa_quantite
+          CLOSE fart
+          PERFORM GERER_STOCK
+          OPEN I-O fachat
+          WRITE achatTamp END-WRITE
+          CLOSE fachat
+        END-IF
+      END-READ.
 
-AJOUT_ID_ARTICLE.
-OPEN INPUT fdonnees
-READ fdonnees
-ADD 1 TO fdo_article
-MOVE fdo_client TO do_client
-MOVE fdo_achat TO do_achat
-MOVE fdo_commande TO do_commande
-MOVE fdo_article TO do_article
-CLOSE fdonnees
-OPEN OUTPUT fdonnees
-MOVE fdo_client TO do_client
-MOVE fdo_achat TO do_achat
-MOVE fdo_commande TO do_commande
-MOVE fdo_article TO do_article
-WRITE donneesTamp
-CLOSE fdonnees.
+      ECHANGE.
 
-AJOUT_ID_ACHAT.
-OPEN INPUT fdonnees
-READ fdonnees
-ADD 1 TO fdo_achat
-MOVE fdo_client TO do_client
-MOVE fdo_achat TO do_achat
-MOVE fdo_commande TO do_commande
-MOVE fdo_article TO do_article
-CLOSE fdonnees
-OPEN OUTPUT fdonnees
-MOVE fdo_client TO do_client
-MOVE fdo_achat TO do_achat
-MOVE fdo_commande TO do_commande
-MOVE fdo_article TO do_article
-WRITE donneesTamp
-CLOSE fdonnees.
+      PERFORM EFFECTUER_ACHAT
+      PERFORM REMBOURSEMENT.
 
-AJOUT_ID_COMMANDE.
-OPEN INPUT fdonnees
-READ fdonnees
-ADD 1 TO fdo_commande
-MOVE fdo_client TO do_client
-MOVE fdo_achat TO do_achat
-MOVE fdo_commande TO do_commande
-MOVE fdo_article TO do_article
-CLOSE fdonnees
-OPEN OUTPUT fdonnees
-MOVE fdo_client TO do_client
-MOVE fdo_achat TO do_achat
-MOVE fdo_commande TO do_commande
-MOVE fdo_article TO do_article
-WRITE donneesTamp
-CLOSE fdonnees.
+      REMBOURSEMENT.
 
+      PERFORM GERER_STOCK
+      DISPLAY 'Veuillez saisir l identifiant de l achat à remboursé'
+      ACCEPT Wident
+      OPEN I-O fachat
+      MOVE Wident TO fa_id
+      READ fachat
+      INVALID KEY
+        DISPLAY 'Achat inexistant'
+      NOT INVALID KEY
+        DELETE  fachat RECORD
+      END-READ
+      CLOSE fachat.
 
-STOP RUN.
+      FIN_STOCK.
+
+      OPEN INPUT fart
+      MOVE 0 TO Wfin
+      MOVE 0 TO far_stock
+      START fart KEY = far_stock
+      INVALID KEY
+        DISPLAY 'Le stock est rempli. Tous les articles sont présent'
+      NOT INVALID KEY
+        PERFORM WITH TEST AFTER UNTIL Wfin = 1
+          READ fart NEXT
+          AT END
+            MOVE 1 TO Wfin
+          NOT AT END
+            IF far_stock = 0 THEN
+              DISPLAY 'L article:',far_id,far_nom
+            ELSE
+              MOVE 1 TO Wfin
+            END-IF
+          END-READ
+        END-PERFORM
+      END-START
+      CLOSE fart.
+
+      
+      ARTICLES_POPULAIRES.
