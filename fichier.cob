@@ -69,11 +69,11 @@ FD fart.
   01 artTamp.
     02 far_id PIC 9.
     02 far_nom PIC X(30).
-    02 far_prix PIC 9.
+    02 far_prix PIC 9(3).
     02 far_couleur PIC X(30).
     02 far_taille PIC X(30).
     02 far_type PIC 9.
-    02 far_stock PIC 9.
+    02 far_stock PIC 9(3).
 
 FD fdonnees.
 01 donneesTamp.
@@ -139,12 +139,12 @@ CLOSE fart
   CLOSE fdonnees
 
 PERFORM WITH TEST AFTER UNTIL Wf=0
-DISPLAY 'Saisissez le numero de la fonction:'
+DISPLAY 'Saisissez le numero de la fonction souhaité:'
 DISPLAY '1:ajout_client, 2:supprimer_client, 3:modifier_infoCl,'
 DISPLAY '4:Recherche_fidlite, 5:effectuer_achat, 6:Echange,'
 DISPLAY '7:remboursement, 8:Ajout_commande, 9:Ajout_article,'
 DISPLAY '10:Fin_stock, 11:Articles_populaires, 12:Supprimer_commande,'
-DISPLAY '13: Gerer_stock,14:modifier_commande, 0:quitter'
+DISPLAY '13: Gerer_stock,14:modifier_commande,15:supprimer_article 0:quitter'
         ACCEPT Wf
         EVALUATE Wf
         WHEN 1
@@ -161,20 +161,16 @@ DISPLAY '13: Gerer_stock,14:modifier_commande, 0:quitter'
                 PERFORM ECHANGE
         WHEN 7
                 PERFORM REMBOURSEMENT
-        WHEN 8
-                PERFORM AJOUT_COMMANDE
         WHEN 9
                 PERFORM AJOUT_ARTICLE
         WHEN 10
                 PERFORM FIN_STOCK
-        WHEN 11
-                PERFORM ARTICLES_POPULAIRES
-        WHEN 12
-                PERFORM SUPPRIMER_COMMANDE
         WHEN 13
                 PERFORM GERER_STOCK
-        WHEN 14
-                PERFORM MODIFIER_COMMANDE
+        WHEN 15
+                PERFORM SUPPRIMER_ARTICLE
+        WHEN 16
+                PERFORM AFFICHAGE
         END-EVALUATE
 
 END-PERFORM
@@ -250,20 +246,22 @@ STOP RUN.
         CLOSE fdonnees.
 
         AJOUT_CLIENT.
-        PERFORM AJOUT_ID_CLIENT
-        MOVE do_client TO fcl_id
-        DISPLAY 'Veuillez saisir les informations de la competition'
+
+
+        DISPLAY 'Veuillez saisir les informations du client'
+        DISPLAY 'id du client'
+        ACCEPT fcl_id
         DISPLAY 'Nom du client'
         ACCEPT fcl_nom
         DISPLAY 'Prenom du client'
         ACCEPT fcl_prenom
         DISPLAY 'Mail du client'
         ACCEPT fcl_mail
-        DISPLAY ' Adresse du client'
+        DISPLAY 'Adresse du client'
         ACCEPT fcl_adresse
         MOVE 0 TO Wfin
         PERFORM WITH TEST AFTER UNTIL fcl_fidele > 0 AND fcl_fidele < 3
-          DISPLAY' Saisir 1 si le client a choisi notre programme de fidelité, 2 sinon'
+          DISPLAY 'Saisir 1 si le client a choisi notre programme de fidelité, 2 sinon'
           ACCEPT fcl_fidele
         END-PERFORM
 
@@ -271,6 +269,25 @@ STOP RUN.
         WRITE clientTamp END-WRITE
         CLOSE fclient.
 
+
+        AFFICHAGE.
+        OPEN INPUT fart
+        MOVE 0 TO Wfin
+        PERFORM WITH TEST AFTER UNTIL Wfin=1
+          READ fart NEXT
+          AT END
+            MOVE 1 TO Wfin
+            DISPLAY 'Fin de fichier'
+          NOT AT END
+            DISPLAY 'numero: ',far_id
+            DISPLAY 'Nom: ',far_nom
+            DISPLAY 'prix: ',far_prix
+            DISPLAY 'Taille:',far_taille
+            DISPLAY 'type:',far_type
+            DISPLAY 'couleur:',far_couleur
+            DISPLAY 'quantite:',far_stock
+        END-PERFORM
+        CLOSE fart.
 
       SUPPRIMER_CLIENT.
 
@@ -286,15 +303,27 @@ STOP RUN.
       END-READ
       CLOSE fclient.
 
+      SUPPRIMER_ARTICLE.
+
+      OPEN I-O fart
+      DISPLAY 'Veuillez saisir l`identifiant de l article à supprimer'
+      ACCEPT Wident
+      MOVE Wident TO far_id
+      READ fart
+      INVALID KEY
+        DISPLAY 'Article inexistant'
+      NOT INVALID KEY
+        DELETE fart RECORD
+      END-READ
+      CLOSE fart.
 
       MODIFIER_INFOCL.
-
       OPEN I-O fclient
       PERFORM WITH TEST AFTER UNTIL Wok=0
         DISPLAY 'Saisissez un numero selon la modification souhaitée'
         DISPLAY '1:nom,2:prenom,3:Mail, 4:Adresse, 5:Fidelite, 0:quitter'
         ACCEPT Wok
-        DISPLAY ' Veuillez saisir l`identifiant du client concerné'
+        DISPLAY 'Veuillez saisir l`identifiant du client concerné'
         ACCEPT Wident
         MOVE Wident TO fcl_id
         READ fclient
@@ -303,24 +332,24 @@ STOP RUN.
         NOT INVALID KEY
           EVALUATE Wok
           WHEN 1
-            DISPLAY ' Veuillez saisir le nouveau nom'
+            DISPLAY 'Veuillez saisir le nouveau nom'
             ACCEPT fcl_nom
             REWRITE clientTamp END-REWRITE
           WHEN 2
-            DISPLAY ' Veuillez saisir le nouveau prenom'
+            DISPLAY 'Veuillez saisir le nouveau prenom'
             ACCEPT fcl_prenom
             REWRITE clientTamp END-REWRITE
           WHEN 3
-            DISPLAY ' Veuillez saisir le nouveau mail'
+            DISPLAY 'Veuillez saisir le nouveau mail'
             ACCEPT fcl_mail
             REWRITE clientTamp END-REWRITE
           WHEN 4
-            DISPLAY ' Veuillez saisir la nouvelle adresse'
+            DISPLAY 'Veuillez saisir la nouvelle adresse'
             ACCEPT fcl_adresse
             REWRITE clientTamp END-REWRITE
           WHEN 5
             PERFORM WITH TEST AFTER UNTIL fcl_fidele < 2
-              DISPLAY ' Veuillez saisir la nouvelle état du fidelite'
+              DISPLAY 'Veuillez saisir la nouvelle état du fidelite'
               DISPLAY '(1:Fidele, 0:NonFidele)'
               ACCEPT fcl_fidele
             END-PERFORM
@@ -333,17 +362,20 @@ STOP RUN.
 
       RECHERCHE_FIDELITE.
 
-      OPEN OUTPUT fclient
+      OPEN INPUT fclient
       MOVE 1 TO fcl_fidele
       MOVE 0 TO Wfin
+      DISPLAY 'AFFECTATION VARIABLE REUSSI'
       START fclient KEY = fcl_fidele
       INVALID KEY
         DISPLAY ' clients fidéles inexistants'
       NOT INVALID KEY
+        DISPLAY 'ON EST DANS LA ZONE'
         PERFORM WITH TEST AFTER UNTIL Wfin=1
           READ fclient NEXT
           AT END
             MOVE 1 TO Wfin
+            DISPLAY 'Fin de fichier'
           NOT AT END
             IF fcl_fidele = 1 THEN
               DISPLAY 'client',fcl_id,': ',fcl_nom,fcl_prenom,fcl_mail
@@ -357,9 +389,10 @@ STOP RUN.
 
       AJOUT_ARTICLE.
 
-      PERFORM AJOUT_ID_ARTICLE
-      MOVE do_article TO far_id
+
       DISPLAY 'Veuillez saisir les informations de l article'
+      DISPLAY 'id de l article'
+      ACCEPT far_id
       DISPLAY 'nom de l article'
       ACCEPT far_nom
       DISPLAY 'le prix de l article'
@@ -482,6 +515,3 @@ STOP RUN.
         END-PERFORM
       END-START
       CLOSE fart.
-
-      
-      ARTICLES_POPULAIRES.
