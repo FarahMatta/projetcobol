@@ -128,6 +128,16 @@ IF fart_stat =35 THEN
 END-IF
 CLOSE fart
 
+  IF fdo_stat=35 THEN
+    OPEN OUTPUT fdonnees
+    MOVE 1 TO fdo_achat
+    MOVE 1 TO fdo_commande
+    MOVE 1 TO fdo_client
+    MOVE 1 TO fdo_article
+    WRITE donneesTamp
+  END-IF
+  CLOSE fdonnees
+
 PERFORM WITH TEST AFTER UNTIL Wf=0
 DISPLAY 'Saisissez le numero de la fonction:'
 DISPLAY '1:ajout_client, 2:supprimer_client, 3:modifier_infoCl,'
