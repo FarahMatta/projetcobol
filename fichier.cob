@@ -81,7 +81,6 @@ FD fdonnees.
   02 fdo_commande PIC 9(15).
   02 fdo_client PIC 9(15).
   02 fdo_article PIC 9(15).
-  02 fdo_stat PIC 9(15).
 
 
 WORKING-STORAGE SECTION.
@@ -89,6 +88,7 @@ WORKING-STORAGE SECTION.
   77 fachat_stat PIC 9(2).
   77 fcmd_stat PIC 9(2).
   77 fart_stat PIC 9(2).
+  77 fdo_stat PIC 9(15).
   77 Wfin PIC 9.
   77 Wident PIC 9.
   77 Wf PIC 9(2).
@@ -179,11 +179,13 @@ STOP RUN.
         MOVE fdo_achat TO do_achat
         MOVE fdo_commande TO do_commande
         MOVE fdo_article TO do_article
-        MOVE fdo_client TO do_client
-        MOVE fdo_achat TO do_achat
-        MOVE fdo_commande TO do_commande
-        MOVE fdo_article TO do_article
-        WRITE donneesTamp END-WRITE
+        CLOSE fdonnees
+        OPEN OUTPUT fdonnees
+        MOVE do_client TO fdo_client
+        MOVE do_achat TO fdo_achat
+        MOVE do_commande TO fdo_commande
+        MOVE do_article TO fdo_article
+        WRITE donneesTamp
         CLOSE fdonnees.
 
         AJOUT_ID_ARTICLE.
@@ -194,11 +196,13 @@ STOP RUN.
         MOVE fdo_achat TO do_achat
         MOVE fdo_commande TO do_commande
         MOVE fdo_article TO do_article
-        MOVE fdo_client TO do_client
-        MOVE fdo_achat TO do_achat
-        MOVE fdo_commande TO do_commande
-        MOVE fdo_article TO do_article
-        WRITE donneesTamp END-WRITE
+        CLOSE fdonnees
+        OPEN OUTPUT fdonnees
+        MOVE do_client TO fdo_client
+        MOVE do_achat TO fdo_achat
+        MOVE do_commande TO fdo_commande
+        MOVE do_article TO fdo_article
+        WRITE donneesTamp
         CLOSE fdonnees.
 
         AJOUT_ID_ACHAT.
@@ -209,11 +213,13 @@ STOP RUN.
         MOVE fdo_achat TO do_achat
         MOVE fdo_commande TO do_commande
         MOVE fdo_article TO do_article
-        MOVE fdo_client TO do_client
-        MOVE fdo_achat TO do_achat
-        MOVE fdo_commande TO do_commande
-        MOVE fdo_article TO do_article
-        WRITE donneesTamp END-WRITE
+        CLOSE fdonnees
+        OPEN OUTPUT fdonnees
+        MOVE do_client TO fdo_client
+        MOVE do_achat TO fdo_achat
+        MOVE do_commande TO fdo_commande
+        MOVE do_article TO fdo_article
+        WRITE donneesTamp
         CLOSE fdonnees.
 
         AJOUT_ID_COMMANDE.
@@ -224,11 +230,13 @@ STOP RUN.
         MOVE fdo_achat TO do_achat
         MOVE fdo_commande TO do_commande
         MOVE fdo_article TO do_article
-        MOVE fdo_client TO do_client
-        MOVE fdo_achat TO do_achat
-        MOVE fdo_commande TO do_commande
-        MOVE fdo_article TO do_article
-        WRITE donneesTamp END-WRITE
+        CLOSE fdonnees
+        OPEN OUTPUT fdonnees
+        MOVE do_client TO fdo_client
+        MOVE do_achat TO fdo_achat
+        MOVE do_commande TO fdo_commande
+        MOVE do_article TO fdo_article
+        WRITE donneesTamp
         CLOSE fdonnees.
 
         AJOUT_CLIENT.
