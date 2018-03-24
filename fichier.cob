@@ -134,7 +134,8 @@ DISPLAY '1:ajout_client, 2:supprimer_client, 3:modifier_infoCl,'
 DISPLAY '4:Recherche_fidlite, 5:effectuer_achat, 6:Echange,'
 DISPLAY '7:remboursement, 8:Ajout_commande, 9:Ajout_article,'
 DISPLAY '10:Fin_stock, 11:Articles_populaires, 12:Supprimer_commande,'
-DISPLAY '13: Gerer_stock,14:modifier_commande,15:supprimer_article 0:quitter'
+DISPLAY '13: Gerer_stock,14:modifier_commande,15:supprimer_article'
+DISPLAY '16:affichage_article,17:affichage_client,0:quitter'
         ACCEPT Wf
         EVALUATE Wf
         WHEN 1
@@ -160,7 +161,9 @@ DISPLAY '13: Gerer_stock,14:modifier_commande,15:supprimer_article 0:quitter'
         WHEN 15
                 PERFORM SUPPRIMER_ARTICLE
         WHEN 16
-                PERFORM AFFICHAGE
+                PERFORM AFFICHAGE_ARTICLE
+        WHEN 17
+                PERFORM AFFICHAGE_CLIENT
         END-EVALUATE
 
 END-PERFORM
@@ -235,12 +238,12 @@ STOP RUN.
         WRITE donneesTamp
         CLOSE fdonnees.
 
+
         AJOUT_CLIENT.
-
-
+        PERFORM AJOUT_ID_CLIENT
+        MOVE do_client TO fcl_id
         DISPLAY 'Veuillez saisir les informations du client'
-        DISPLAY 'id du client'
-        ACCEPT fcl_id
+
         DISPLAY 'Nom du client'
         ACCEPT fcl_nom
         DISPLAY 'Prenom du client'
@@ -254,13 +257,29 @@ STOP RUN.
           DISPLAY 'Saisir 1 si le client a choisi notre programme de fidelité, 2 sinon'
           ACCEPT fcl_fidele
         END-PERFORM
-
         OPEN I-O fclient
         WRITE clientTamp END-WRITE
         CLOSE fclient.
 
+        AFFICHAGE_CLIENT.
+        OPEN INPUT fclient
+        MOVE 0 TO Wfin
+        PERFORM WITH TEST AFTER UNTIL Wfin=1
+          READ fclient NEXT
+          AT END
+            MOVE 1 TO Wfin
+            DISPLAY 'Fin de fichier'
+          NOT AT END
+            DISPLAY 'numero: ',fcl_id
+            DISPLAY 'Nom: ',fcl_nom
+            DISPLAY 'prenom: ',fcl_prenom
+            DISPLAY 'mail:',fcl_mail
+            DISPLAY 'adresse:',fcl_adresse
+            DISPLAY 'fidelite:',fcl_fidele
+        END-PERFORM
+        CLOSE fclient.
 
-        AFFICHAGE.
+        AFFICHAGE_ARTICLE.
         OPEN INPUT fart
         MOVE 0 TO Wfin
         PERFORM WITH TEST AFTER UNTIL Wfin=1
