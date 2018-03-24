@@ -33,6 +33,7 @@ FILE-CONTROL.
   ALTERNATE RECORD KEY far_nom WITH DUPLICATES
   ALTERNATE RECORD KEY far_taille WITH DUPLICATES
   ALTERNATE RECORD KEY far_type WITH DUPLICATES
+  ALTERNATE RECORD KEY far_stock WITH DUPLICATES
   FILE STATUS IS fart_stat.
 
   SELECT fdonnees ASSIGN TO "donnees.dat"
@@ -56,7 +57,7 @@ FD fachat.
     02 fa_id PIC 9.
     02 fa_idcmd PIC 9.
     02 fa_idart PIC 9.
-    02 fa_quantite PIC 9.
+    02 fa_quantite PIC 9(2).
 
 FD fcmd.
   01 cmdTamp.
@@ -73,7 +74,7 @@ FD fart.
     02 far_couleur PIC X(30).
     02 far_taille PIC X(30).
     02 far_type PIC 9.
-    02 far_stock PIC 9(3).
+    02 far_stock PIC 9(2).
 
 FD fdonnees.
 01 donneesTamp.
@@ -100,6 +101,7 @@ WORKING-STORAGE SECTION.
   77 do_commande PIC 9(15).
   77 do_client PIC 9(15).
   77 do_article PIC 9(15).
+  77 Wqte PIC 9(2).
 
 
 PROCEDURE DIVISION.
@@ -142,10 +144,11 @@ PERFORM WITH TEST AFTER UNTIL Wf=0
 DISPLAY 'Saisissez le numero de la fonction souhaité:'
 DISPLAY '1:ajout_client, 2:supprimer_client, 3:modifier_infoCl,'
 DISPLAY '4:Recherche_fidlite, 5:effectuer_achat, 6:Echange,'
-DISPLAY '7:remboursement, 8:Ajout_commande, 9:Ajout_article,'
-DISPLAY '10:Fin_stock, 11:Articles_populaires, 12:Supprimer_commande,'
-DISPLAY '13: Gerer_stock,14:modifier_commande,15:supprimer_article'
-DISPLAY '16:affichage_article,17:affichage_client,0:quitter'
+DISPLAY '7:remboursement, 8:Ajout_article,'
+DISPLAY '9:Fin_stock'
+DISPLAY '10: Gerer_stock,11:supprimer_article'
+DISPLAY '12:affichage_article,13:affichage_client'
+DISPLAY '14:affichage_achat,15:supprimer_achat,0:quitter'
         ACCEPT Wf
         EVALUATE Wf
         WHEN 1
@@ -162,18 +165,22 @@ DISPLAY '16:affichage_article,17:affichage_client,0:quitter'
                 PERFORM ECHANGE
         WHEN 7
                 PERFORM REMBOURSEMENT
-        WHEN 9
+        WHEN 8
                 PERFORM AJOUT_ARTICLE
-        WHEN 10
+        WHEN 9
                 PERFORM FIN_STOCK
-        WHEN 13
+        WHEN 10
                 PERFORM GERER_STOCK
-        WHEN 15
+        WHEN 11
                 PERFORM SUPPRIMER_ARTICLE
-        WHEN 16
+        WHEN 12
                 PERFORM AFFICHAGE_ARTICLE
-        WHEN 17
+        WHEN 13
                 PERFORM AFFICHAGE_CLIENT
+        WHEN 14
+                PERFORM AFFICHAGE_ACHAT
+        WHEN 15
+                PERFORM SUPPRIMER_ACHAT
         END-EVALUATE
 
 END-PERFORM
@@ -250,10 +257,9 @@ STOP RUN.
 
 
         AJOUT_CLIENT.
-        PERFORM AJOUT_ID_CLIENT
-        MOVE do_client TO fcl_id
         DISPLAY 'Veuillez saisir les informations du client'
-
+        DISPLAY 'id client'
+        ACCEPT fcl_id
         DISPLAY 'Nom du client'
         ACCEPT fcl_nom
         DISPLAY 'Prenom du client'
@@ -308,6 +314,22 @@ STOP RUN.
         END-PERFORM
         CLOSE fart.
 
+        AFFICHAGE_ACHAT.
+        OPEN INPUT fachat
+        MOVE 0 TO Wfin
+        PERFORM WITH TEST AFTER UNTIL Wfin=1
+          READ fachat NEXT
+          AT END
+            MOVE 1 TO Wfin
+            DISPLAY 'Fin de fichier'
+          NOT AT END
+            DISPLAY 'numero: ',fa_id
+            DISPLAY 'num commande: ',fa_idcmd
+            DISPLAY 'num article: ',fa_idart
+            DISPLAY 'quantite:',fa_quantite
+        END-PERFORM
+        CLOSE fachat.
+
       SUPPRIMER_CLIENT.
 
       OPEN I-O fclient
@@ -336,45 +358,60 @@ STOP RUN.
       END-READ
       CLOSE fart.
 
+      SUPPRIMER_ACHAT.
+      OPEN I-O fachat
+      DISPLAY 'Veuillez saisir l`identifiant de l achat à supprimer'
+      ACCEPT Wident
+      MOVE Wident TO fa_id
+      READ fachat
+      INVALID KEY
+        DISPLAY 'Achat inexistant'
+      NOT INVALID KEY
+        DELETE fachat RECORD
+      END-READ
+      CLOSE fachat.
+
       MODIFIER_INFOCL.
       OPEN I-O fclient
       PERFORM WITH TEST AFTER UNTIL Wok=0
         DISPLAY 'Saisissez un numero selon la modification souhaitée'
         DISPLAY '1:nom,2:prenom,3:Mail, 4:Adresse, 5:Fidelite, 0:quitter'
         ACCEPT Wok
-        DISPLAY 'Veuillez saisir l`identifiant du client concerné'
-        ACCEPT Wident
-        MOVE Wident TO fcl_id
-        READ fclient
-        INVALID KEY
-          DISPLAY 'Client inexistant'
-        NOT INVALID KEY
-          EVALUATE Wok
-          WHEN 1
-            DISPLAY 'Veuillez saisir le nouveau nom'
-            ACCEPT fcl_nom
-            REWRITE clientTamp END-REWRITE
-          WHEN 2
-            DISPLAY 'Veuillez saisir le nouveau prenom'
-            ACCEPT fcl_prenom
-            REWRITE clientTamp END-REWRITE
-          WHEN 3
-            DISPLAY 'Veuillez saisir le nouveau mail'
-            ACCEPT fcl_mail
-            REWRITE clientTamp END-REWRITE
-          WHEN 4
-            DISPLAY 'Veuillez saisir la nouvelle adresse'
-            ACCEPT fcl_adresse
-            REWRITE clientTamp END-REWRITE
-          WHEN 5
-            PERFORM WITH TEST AFTER UNTIL fcl_fidele < 2
-              DISPLAY 'Veuillez saisir la nouvelle état du fidelite'
-              DISPLAY '(1:Fidele, 0:NonFidele)'
-              ACCEPT fcl_fidele
-            END-PERFORM
-            REWRITE clientTamp END-REWRITE
-        END-EVALUATE
-        END-READ
+        IF Wok NOT = 0 THEN
+          DISPLAY 'Veuillez saisir l`identifiant du client concerné'
+          ACCEPT Wident
+          MOVE Wident TO fcl_id
+          READ fclient
+          INVALID KEY
+            DISPLAY 'Client inexistant'
+          NOT INVALID KEY
+            EVALUATE Wok
+            WHEN 1
+              DISPLAY 'Veuillez saisir le nouveau nom'
+              ACCEPT fcl_nom
+              REWRITE clientTamp END-REWRITE
+            WHEN 2
+              DISPLAY 'Veuillez saisir le nouveau prenom'
+              ACCEPT fcl_prenom
+              REWRITE clientTamp END-REWRITE
+            WHEN 3
+              DISPLAY 'Veuillez saisir le nouveau mail'
+              ACCEPT fcl_mail
+              REWRITE clientTamp END-REWRITE
+            WHEN 4
+              DISPLAY 'Veuillez saisir la nouvelle adresse'
+              ACCEPT fcl_adresse
+              REWRITE clientTamp END-REWRITE
+            WHEN 5
+              PERFORM WITH TEST AFTER UNTIL fcl_fidele < 2
+                DISPLAY 'Veuillez saisir la nouvelle état du fidelite'
+                DISPLAY '(1:Fidele, 0:NonFidele)'
+                ACCEPT fcl_fidele
+              END-PERFORM
+              REWRITE clientTamp END-REWRITE
+          END-EVALUATE
+          END-READ
+        END-IF
       END-PERFORM
       CLOSE fclient.
 
@@ -437,9 +474,9 @@ STOP RUN.
 
 
       GERER_STOCK.
-
+      DISPLAY 'Processus changement de stock en cours'
       OPEN I-O fart
-      DISPLAY 'Veuillez saisir les informations de l article à retourner'
+      DISPLAY 'Veuillez saisir les informations de l article'
       DISPLAY 'l identifiant de l article'
       ACCEPT Widart
       MOVE Widart TO far_id
@@ -448,14 +485,20 @@ STOP RUN.
         DISPLAY 'Article inexistant'
       NOT INVALID KEY
         PERFORM WITH TEST AFTER UNTIL Wok > 0 AND Wok < 3
-          DISPLAY 'Saisissez 1 pour un achat et 2 pour un retour'
+          DISPLAY 'Saisissez 1 pour un retrait dans les stocks'
+          DISPLAY 'et 2 pour un rajout'
           ACCEPT Wok
         END-PERFORM
-        DISPLAY 'Veuillez saisir la quantité acheté / retourné'
+        DISPLAY 'Veuillez saisir la quantité à rajouter / retirer'
         ACCEPT fa_quantite
         EVALUATE Wok
           WHEN 1
-            compute far_stock = far_stock - fa_quantite
+            IF far_stock < fa_quantite THEN
+              DISPLAY 'Retrait du stock impossible.La valeur du retrait depasse'
+              DISPLAY 'la quantité en stock'
+            ELSE
+              compute far_stock = far_stock - fa_quantite
+            END-IF
           WHEN 2
             compute far_stock = far_stock + fa_quantite
         END-EVALUATE
@@ -465,24 +508,28 @@ STOP RUN.
 
       EFFECTUER_ACHAT.
 
+      DISPLAY 'Processus Achat en cours'
       OPEN INPUT fart
       DISPLAY 'Veuillez saisir les informations de l achat'
       DISPLAY 'Veuillez saisir l id de l article'
       ACCEPT Widart
       DISPLAY 'Veuillez saisir la quantité acheté / retourné'
-      ACCEPT fa_quantite
-      MOVE Widart TO fa_idart
+      ACCEPT Wqte
+      MOVE Widart TO far_id
       READ fart
       INVALID KEY
         DISPLAY 'Article inexistant'
       NOT INVALID KEY
-        IF far_stock > fa_quantite OR far_stock = fa_quantite THEN
-          PERFORM AJOUT_ID_ACHAT
-          MOVE do_achat TO fa_id
+        IF far_stock < Wqte THEN
+          DISPLAY 'La quantité en stock n est pas suffisante.'
+          DISPLAY 'Vous ne pouvez pas effectuer l achat'
+        ELSE
+          DISPLAY 'id de l achat'
+          ACCEPT fa_id
           DISPLAY 'Veuillez saisir l id de la commande'
           ACCEPT fa_idcmd
-          DISPLAY 'Veuillez saisir la quantité acheté / retourné'
-          ACCEPT fa_quantite
+          MOVE Wqte TO fa_quantite
+          MOVE far_id TO fa_idart
           CLOSE fart
           PERFORM GERER_STOCK
           OPEN I-O fachat
@@ -491,23 +538,32 @@ STOP RUN.
         END-IF
       END-READ.
 
-      ECHANGE.
 
+
+      ECHANGE.
+      DISPLAY 'Processus echange en cours'
       PERFORM EFFECTUER_ACHAT
       PERFORM REMBOURSEMENT.
 
       REMBOURSEMENT.
 
+      DISPLAY 'Processus Remboursement en cours'
       PERFORM GERER_STOCK
       DISPLAY 'Veuillez saisir l identifiant de l achat à remboursé'
       ACCEPT Wident
+      DISPLAY 'Veuillez saisir la quantité à rembourser'
+      ACCEPT Wqte
       OPEN I-O fachat
       MOVE Wident TO fa_id
       READ fachat
       INVALID KEY
         DISPLAY 'Achat inexistant'
       NOT INVALID KEY
-        DELETE  fachat RECORD
+        IF fa_quantite = 0 THEN
+          DELETE  fachat RECORD
+        ELSE
+          compute fa_quantite= fa_quantite - Wqte
+          REWRITE achatTamp END-REWRITE
       END-READ
       CLOSE fachat.
 
@@ -524,9 +580,10 @@ STOP RUN.
           READ fart NEXT
           AT END
             MOVE 1 TO Wfin
+            DISPLAY 'Fin de fichier'
           NOT AT END
             IF far_stock = 0 THEN
-              DISPLAY 'L article:',far_id,far_nom
+              DISPLAY 'L article ',far_id,': ',far_nom
             ELSE
               MOVE 1 TO Wfin
             END-IF
