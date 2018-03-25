@@ -16,7 +16,7 @@ FILE-CONTROL.
   ACCESS MODE IS DYNAMIC
   RECORD KEY fa_id
   ALTERNATE RECORD KEY fa_idcmd WITH DUPLICATES
-  ALTERNATE RECORD KEY fa_idart
+  ALTERNATE RECORD KEY fa_idart WITH DUPLICATES
   FILE STATUS IS fachat_stat.
 
   SELECT fcmd ASSIGN TO "commandes.dat"
@@ -102,6 +102,7 @@ WORKING-STORAGE SECTION.
   77 do_client PIC 9(15).
   77 do_article PIC 9(15).
   77 Wqte PIC 9(2).
+  77 Wval PIC 9.
 
 
 PROCEDURE DIVISION.
@@ -506,10 +507,11 @@ STOP RUN.
       END-READ
       CLOSE fart.
 
+
       EFFECTUER_ACHAT.
 
       DISPLAY 'Processus Achat en cours'
-      OPEN INPUT fart
+      OPEN I-O fart
       DISPLAY 'Veuillez saisir les informations de l achat'
       DISPLAY 'Veuillez saisir l id de l article'
       ACCEPT Widart
@@ -533,6 +535,8 @@ STOP RUN.
           CLOSE fart
           PERFORM GERER_STOCK
           OPEN I-O fachat
+          DISPLAY 'idTamp',fa_id
+          DISPLAY fa_quantite
           WRITE achatTamp END-WRITE
           CLOSE fachat
         END-IF
@@ -559,7 +563,7 @@ STOP RUN.
       INVALID KEY
         DISPLAY 'Achat inexistant'
       NOT INVALID KEY
-        IF fa_quantite = 0 THEN
+        IF fa_quantite = Wqte THEN
           DELETE  fachat RECORD
         ELSE
           compute fa_quantite= fa_quantite - Wqte
