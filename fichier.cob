@@ -147,7 +147,7 @@ CLOSE fdonnees
 PERFORM WITH TEST AFTER UNTIL Wf=0
 DISPLAY 'Saisissez le numero de la fonction souhait√©:'
 DISPLAY '1:ajout_client, 2:supprimer_client, 3:modifier_infoCl,'
-DISPLAY '4:Recherche_fidlite, 6:Echange,'
+DISPLAY '4:Recherche_fidlitet', 6:Echange,'
 DISPLAY '7:remboursement, 8:Ajout_article,'
 DISPLAY '9:Fin_stock'
 DISPLAY '10: Gerer_stock,11:supprimer_article'
@@ -237,7 +237,6 @@ STOP RUN.
         MOVE fdo_client TO fcl_id
         DISPLAY 'ICII ',fcl_id
         DISPLAY 'Veuillez saisir les informations du client'
-
         DISPLAY 'Nom du client'
         ACCEPT fcl_nom
         DISPLAY 'Prenom du client'
@@ -311,7 +310,7 @@ STOP RUN.
       SUPPRIMER_CLIENT.
 
       OPEN I-O fclient
-      DISPLAY 'Veuillez saisir l`identifiant du client √  supprimer'
+      DISPLAY 'Veuillez saisir l`identifiant du client ÔøΩ  supprimer'
       ACCEPT Wident
       MOVE Wident TO fcl_id
       READ fclient
@@ -325,7 +324,7 @@ STOP RUN.
       SUPPRIMER_ARTICLE.
 
       OPEN I-O fart
-      DISPLAY 'Veuillez saisir l`identifiant de l article √  supprimer'
+      DISPLAY 'Veuillez saisir l`identifiant de l article ÔøΩ  supprimer'
       ACCEPT Wident
       MOVE Wident TO far_id
       READ fart
@@ -338,7 +337,7 @@ STOP RUN.
 
       SUPPRIMER_ACHAT.
       OPEN I-O fachat
-      DISPLAY 'Veuillez saisir l`identifiant de l achat √  supprimer'
+      DISPLAY 'Veuillez saisir l`identifiant de l achat ÔøΩ  supprimer'
       ACCEPT Wident
       MOVE Wident TO fa_id
       READ fachat
@@ -464,7 +463,7 @@ STOP RUN.
           DISPLAY 'et 2 pour un rajout'
           ACCEPT Wok
         END-PERFORM
-        DISPLAY 'Veuillez saisir la quantit√© √  rajouter / retirer'
+        DISPLAY 'Veuillez saisir la quantit√© ÔøΩ  rajouter / retirer'
         ACCEPT fa_quantite
         EVALUATE Wok
           WHEN 1
@@ -526,9 +525,9 @@ STOP RUN.
 
       DISPLAY 'Processus Remboursement en cours'
       PERFORM GERER_STOCK
-      DISPLAY 'Veuillez saisir l identifiant de l achat √  rembours√©'
+      DISPLAY 'Veuillez saisir l identifiant de l achat ÔøΩ  rembours√©'
       ACCEPT Wident
-      DISPLAY 'Veuillez saisir la quantit√© √  rembourser'
+      DISPLAY 'Veuillez saisir la quantit√© ÔøΩ  rembourser'
       ACCEPT Wqte
       OPEN I-O fachat
       MOVE Wident TO fa_id
