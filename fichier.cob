@@ -580,7 +580,7 @@ STOP RUN.
         INVALID KEY
             DISPLAY 'Aucun client pour cet ID'
         NOT INVALID KEY
-            MOVE WidClient TO fco_idClient
+            MOVE fcl_id TO fco_idClient
             MOVE 1 TO Wfin
         END-START
         CLOSE fclient
@@ -588,6 +588,7 @@ STOP RUN.
       MOVE 0 TO fco_prix
       MOVE 0 TO fco_nbArticles
       PERFORM AJOUT_ID_COMMANDE
+      DISPLAY fdo_commande
       MOVE fdo_commande TO fco_id
       WRITE cmdTamp
       CLOSE fcmd.
@@ -608,4 +609,4 @@ STOP RUN.
           DISPLAY 'prix total: ',fco_prix
           DISPLAY '--------------------'
       END-PERFORM
-      CLOSE fachat.
+      CLOSE fcmd.
