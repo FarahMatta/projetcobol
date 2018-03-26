@@ -45,7 +45,7 @@ DATA DIVISION.
 FILE SECTION.
 FD fclient.
   01 clientTamp.
-    02 fcl_id PIC 9.
+    02 fcl_id PIC 9(2).
     02 fcl_nom PIC X(30).
     02 fcl_prenom PIC X(30).
     02 fcl_mail PIC X(30).
@@ -54,21 +54,21 @@ FD fclient.
 
 FD fachat.
   01 achatTamp.
-    02 fa_id PIC 9.
-    02 fa_idcmd PIC 9.
-    02 fa_idart PIC 9.
+    02 fa_id PIC 9(2).
+    02 fa_idcmd PIC 9(2).
+    02 fa_idart PIC 9(2).
     02 fa_quantite PIC 9(2).
 
 FD fcmd.
   01 cmdTamp.
-    02 fco_id PIC 9.
-    02 fco_idClient PIC 9.
-    02 fco_nbArticles PIC 9.
-    02 fco_prix PIC 9.
+    02 fco_id PIC 9(2).
+    02 fco_idClient PIC 9(2).
+    02 fco_nbArticles PIC 9(2).
+    02 fco_prix PIC 9(2).
 
 FD fart.
   01 artTamp.
-    02 far_id PIC 9.
+    02 far_id PIC 9(2).
     02 far_nom PIC X(30).
     02 far_prix PIC 9(3).
     02 far_couleur PIC X(30).
@@ -78,10 +78,10 @@ FD fart.
 
 FD fdonnees.
 01 donneesTamp.
-  02 fdo_achat PIC 9.
-  02 fdo_commande PIC 9.
-  02 fdo_client PIC 9.
-  02 fdo_article PIC 9.
+  02 fdo_achat PIC 9(2).
+  02 fdo_commande PIC 9(2).
+  02 fdo_client PIC 9(2).
+  02 fdo_article PIC 9(2).
 
 
 WORKING-STORAGE SECTION.
@@ -93,12 +93,12 @@ WORKING-STORAGE SECTION.
   77 Wfin PIC 9.
   77 Wident PIC 9.
   77 Wf PIC 9(2).
-  77 WidClient PIC 9.
-  77 WidCommande PIC 9.
+  77 WidClient PIC 9(2).
+  77 WidCommande PIC 9(2).
   77 Wok PIC 9(2).
   77 Wpre PIC X(30).
   77 Wnom PIC X(30).
-  77 Widart PIC 9.
+  77 Widart PIC 9(2).
   77 do_achat PIC 9(15).
   77 do_commande PIC 9(15).
   77 do_client PIC 9(15).
@@ -594,6 +594,7 @@ STOP RUN.
       PERFORM AJOUT_ID_COMMANDE
       MOVE fdo_commande TO fco_id
 
+
       DISPLAY 'Ajout des achats de cette commande'
       MOVE 1 TO Wfin
       PERFORM WITH TEST AFTER UNTIL Wfin = 0
@@ -601,6 +602,34 @@ STOP RUN.
         DISPLAY 'Voulez vous ajouter un autre article ? oui:1 non:0'
         ACCEPT Wfin
       END-PERFORM
+      OPEN INPUT fachat
+      MOVE 0 TO Wfin
+      MOVE fco_id TO fa_idcmd
+      START fachat KEY = fa_idcmd
+      INVALID KEY
+        DISPLAY 'invalid key lecture sur zone fa_icmd (Ajout commande)'
+      NOT INVALID KEY
+        PERFORM WITH TEST AFTER UNTIL Wfin = 1
+          READ fachat NEXT
+          AT END
+            MOVE 1 TO Wfin
+            DISPLAY 'Fin de fichier achat ajout article'
+          NOT AT END
+            COMPUTE fco_nbArticles = fco_nbArticles + fa_quantite
+
+            OPEN INPUT fart
+            MOVE fa_idart TO far_id
+            READ fart
+                INVALID KEY
+                    DISPLAY 'Article inexistant'
+                NOT INVALID KEY
+                    COMPUTE fco_prix = fco_prix + (far_prix*fa_quantite)
+            END-READ
+            CLOSE fart
+          END-READ
+        END-PERFORM
+      END-START
+      CLOSE fachat
       WRITE cmdTamp
       CLOSE fcmd.
 
