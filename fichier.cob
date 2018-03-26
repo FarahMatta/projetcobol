@@ -147,7 +147,7 @@ CLOSE fdonnees
 PERFORM WITH TEST AFTER UNTIL Wf=0
 DISPLAY 'Saisissez le numero de la fonction souhaitÃ©:'
 DISPLAY '1:ajout_client, 2:supprimer_client, 3:modifier_infoCl,'
-DISPLAY '4:Recherche_fidlitet', 6:Echange,'
+DISPLAY '4:Recherche_fidélité, 6:Echange,'
 DISPLAY '7:remboursement, 8:Ajout_article,'
 DISPLAY '9:Fin_stock'
 DISPLAY '10: Gerer_stock,11:supprimer_article'
@@ -571,26 +571,36 @@ STOP RUN.
       CLOSE fart.
 
       AJOUT-COMMANDE.
+      OPEN I-O fcmd
       MOVE 0 TO Wfin
+      MOVE 0 TO fco_prix
+      MOVE 0 TO fco_nbArticles
       DISPLAY 'Veuillez saisir les informations de la commande :'
       PERFORM WITH TEST AFTER UNTIL Wfin = 1
         DISPLAY 'id client : '
-        ACCEPT fcl_id
+        ACCEPT WidClient
         OPEN INPUT fclient
-        START fclient KEY = fcl_id
+        MOVE WidClient TO fcl_id
+        READ fclient
         INVALID KEY
             DISPLAY 'Aucun client pour cet ID'
         NOT INVALID KEY
-            MOVE fcl_id TO fco_idClient
             MOVE 1 TO Wfin
-        END-START
+            MOVE fcl_id TO fco_idClient
+        END-READ
         CLOSE fclient
       END-PERFORM
-      MOVE 0 TO fco_prix
-      MOVE 0 TO fco_nbArticles
+
       PERFORM AJOUT_ID_COMMANDE
-      DISPLAY fdo_commande
       MOVE fdo_commande TO fco_id
+
+      DISPLAY 'Ajout des achats de cette commande'
+      MOVE 1 TO Wfin
+      PERFORM WITH TEST AFTER UNTIL Wfin = 0
+        PERFORM EFFECTUER_ACHAT
+        DISPLAY 'Voulez vous ajouter un autre article ? oui:1 non:0'
+        ACCEPT Wfin
+      END-PERFORM
       WRITE cmdTamp
       CLOSE fcmd.
 
@@ -614,14 +624,13 @@ STOP RUN.
 
 
       SUPPRIMER_COMMANDE.
-
       OPEN I-O fcmd
       DISPLAY 'Veuillez saisir l`identifiant de la commande'
       ACCEPT Wident
       MOVE Wident TO fco_id
       READ fcmd
       INVALID KEY
-        DISPLAY 'Commandeinexistant'
+        DISPLAY 'Commande inexistante'
       NOT INVALID KEY
         DELETE fcmd RECORD
       END-READ
