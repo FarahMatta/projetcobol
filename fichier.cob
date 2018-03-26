@@ -78,10 +78,10 @@ FD fart.
 
 FD fdonnees.
 01 donneesTamp.
-  02 fdo_achat PIC 9(15).
-  02 fdo_commande PIC 9(15).
-  02 fdo_client PIC 9(15).
-  02 fdo_article PIC 9(15).
+  02 fdo_achat PIC 9.
+  02 fdo_commande PIC 9.
+  02 fdo_client PIC 9.
+  02 fdo_article PIC 9.
 
 
 WORKING-STORAGE SECTION.
@@ -89,7 +89,7 @@ WORKING-STORAGE SECTION.
   77 fachat_stat PIC 9(2).
   77 fcmd_stat PIC 9(2).
   77 fart_stat PIC 9(2).
-  77 fdo_stat PIC 9(15).
+  77 fdo_stat PIC 9(2).
   77 Wfin PIC 9.
   77 Wident PIC 9.
   77 Wf PIC 9(2).
@@ -133,15 +133,16 @@ IF fart_stat =35 THEN
 END-IF
 CLOSE fart
 
-  IF fdo_stat=35 THEN
+OPEN EXTEND  fdonnees
+IF fdo_stat=35 THEN
     OPEN OUTPUT fdonnees
-    MOVE 1 TO fdo_achat
-    MOVE 1 TO fdo_commande
-    MOVE 1 TO fdo_client
-    MOVE 1 TO fdo_article
-    WRITE donneesTamp
-  END-IF
-  CLOSE fdonnees
+    MOVE 0 TO fdo_achat
+    MOVE 0 TO fdo_commande
+    MOVE 0 TO fdo_client
+    MOVE 0 TO fdo_article
+    WRITE donneesTamp END-WRITE
+END-IF
+CLOSE fdonnees
 
 PERFORM WITH TEST AFTER UNTIL Wf=0
 DISPLAY 'Saisissez le numero de la fonction souhaité:'
@@ -200,75 +201,45 @@ STOP RUN.
         OPEN I-O fdonnees
         READ fdonnees
         ADD 1 TO fdo_client
+        REWRITE donneesTamp END-REWRITE
         MOVE fdo_client TO do_client
-        MOVE fdo_achat TO do_achat
-        MOVE fdo_commande TO do_commande
-        MOVE fdo_article TO do_article
-        CLOSE fdonnees
-        OPEN OUTPUT fdonnees
-        MOVE do_client TO fdo_client
-        MOVE do_achat TO fdo_achat
-        MOVE do_commande TO fdo_commande
-        MOVE do_article TO fdo_article
-        WRITE donneesTamp
         CLOSE fdonnees.
 
         AJOUT_ID_ARTICLE.
         OPEN I-O fdonnees
         READ fdonnees
         ADD 1 TO fdo_article
-        MOVE fdo_client TO do_client
-        MOVE fdo_achat TO do_achat
-        MOVE fdo_commande TO do_commande
+        REWRITE donneesTamp END-REWRITE
         MOVE fdo_article TO do_article
-        CLOSE fdonnees
-        OPEN OUTPUT fdonnees
-        MOVE do_client TO fdo_client
-        MOVE do_achat TO fdo_achat
-        MOVE do_commande TO fdo_commande
-        MOVE do_article TO fdo_article
-        WRITE donneesTamp
         CLOSE fdonnees.
+
 
         AJOUT_ID_ACHAT.
         OPEN I-O fdonnees
         READ fdonnees
         ADD 1 TO fdo_achat
-        MOVE fdo_client TO do_client
+        REWRITE donneesTamp END-REWRITE
         MOVE fdo_achat TO do_achat
-        MOVE fdo_commande TO do_commande
-        MOVE fdo_article TO do_article
-        CLOSE fdonnees
-        OPEN OUTPUT fdonnees
-        MOVE do_client TO fdo_client
-        MOVE do_achat TO fdo_achat
-        MOVE do_commande TO fdo_commande
-        MOVE do_article TO fdo_article
-        WRITE donneesTamp
         CLOSE fdonnees.
 
+
         AJOUT_ID_COMMANDE.
+
         OPEN I-O fdonnees
         READ fdonnees
         ADD 1 TO fdo_commande
-        MOVE fdo_client TO do_client
-        MOVE fdo_achat TO do_achat
+        REWRITE donneesTamp END-REWRITE
         MOVE fdo_commande TO do_commande
-        MOVE fdo_article TO do_article
-        CLOSE fdonnees
-        OPEN OUTPUT fdonnees
-        MOVE do_client TO fdo_client
-        MOVE do_achat TO fdo_achat
-        MOVE do_commande TO fdo_commande
-        MOVE do_article TO fdo_article
-        WRITE donneesTamp
         CLOSE fdonnees.
 
 
+
         AJOUT_CLIENT.
+        PERFORM AJOUT_ID_CLIENT
+        MOVE fdo_client TO fcl_id
+        DISPLAY 'ICII ',fcl_id
         DISPLAY 'Veuillez saisir les informations du client'
-        DISPLAY 'id client'
-        ACCEPT fcl_id
+
         DISPLAY 'Nom du client'
         ACCEPT fcl_nom
         DISPLAY 'Prenom du client'
@@ -452,11 +423,9 @@ STOP RUN.
       CLOSE fclient.
 
       AJOUT_ARTICLE.
-
-
+      PERFORM AJOUT_ID_ARTICLE
+      MOVE fdo_article TO far_id
       DISPLAY 'Veuillez saisir les informations de l article'
-      DISPLAY 'id de l article'
-      ACCEPT far_id
       DISPLAY 'nom de l article'
       ACCEPT far_nom
       DISPLAY 'le prix de l article'
@@ -533,8 +502,8 @@ STOP RUN.
           DISPLAY 'La quantité en stock n est pas suffisante.'
           DISPLAY 'Vous ne pouvez pas effectuer l achat'
         ELSE
-          DISPLAY 'id de l achat'
-          ACCEPT fa_id
+          PERFORM AJOUT_ID_ACHAT
+          MOVE fdo_achat TO fa_id
           DISPLAY 'Veuillez saisir l id de la commande'
           ACCEPT fa_idcmd
           MOVE Wqte TO fa_quantite
