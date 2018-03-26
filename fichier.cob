@@ -153,7 +153,7 @@ DISPLAY '9:Fin_stock'
 DISPLAY '10: Gerer_stock,11:supprimer_article'
 DISPLAY '12:affichage_article,13:affichage_client'
 DISPLAY '14:affichage_achat,15:affichage_commande'
-DISPLAY '16:supprimer_achat, 17:ajout-commande, 0:quitter'
+DISPLAY '16:supprimer_achat, 17:supprimer_commande, 18:ajout-commande, 0:quitter'
         ACCEPT Wf
         EVALUATE Wf
         WHEN 1
@@ -187,6 +187,8 @@ DISPLAY '16:supprimer_achat, 17:ajout-commande, 0:quitter'
         WHEN 16
                 PERFORM SUPPRIMER_ACHAT
         WHEN 17
+                PERFORM SUPPRIMER_COMMANDE
+        WHEN 18
                 PERFORM AJOUT-COMMANDE
         END-EVALUATE
 
@@ -609,4 +611,19 @@ STOP RUN.
           DISPLAY 'prix total: ',fco_prix
           DISPLAY '--------------------'
       END-PERFORM
+      CLOSE fcmd.
+
+
+      SUPPRIMER_COMMANDE.
+
+      OPEN I-O fcmd
+      DISPLAY 'Veuillez saisir l`identifiant de la commande'
+      ACCEPT Wident
+      MOVE Wident TO fco_id
+      READ fcmd
+      INVALID KEY
+        DISPLAY 'Commandeinexistant'
+      NOT INVALID KEY
+        DELETE fcmd RECORD
+      END-READ
       CLOSE fcmd.
