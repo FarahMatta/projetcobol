@@ -93,6 +93,8 @@ WORKING-STORAGE SECTION.
   77 Wfin PIC 9.
   77 Wident PIC 9.
   77 Wf PIC 9(2).
+  77 WidClient PIC 9.
+  77 WidCommande PIC 9.
   77 Wok PIC 9(2).
   77 Wpre PIC X(30).
   77 Wnom PIC X(30).
@@ -150,7 +152,8 @@ DISPLAY '7:remboursement, 8:Ajout_article,'
 DISPLAY '9:Fin_stock'
 DISPLAY '10: Gerer_stock,11:supprimer_article'
 DISPLAY '12:affichage_article,13:affichage_client'
-DISPLAY '14:affichage_achat,15:supprimer_achat,0:quitter'
+DISPLAY '14:affichage_achat,15:affichage_commande'
+DISPLAY '16:supprimer_achat, 17:ajout-commande, 0:quitter'
         ACCEPT Wf
         EVALUATE Wf
         WHEN 1
@@ -180,8 +183,13 @@ DISPLAY '14:affichage_achat,15:supprimer_achat,0:quitter'
         WHEN 14
                 PERFORM AFFICHAGE_ACHAT
         WHEN 15
+                PERFORM AFFICHAGE_COMMANDE
+        WHEN 16
                 PERFORM SUPPRIMER_ACHAT
+        WHEN 17
+                PERFORM AJOUT-COMMANDE
         END-EVALUATE
+
 
 END-PERFORM
 STOP RUN.
@@ -303,7 +311,7 @@ STOP RUN.
       SUPPRIMER_CLIENT.
 
       OPEN I-O fclient
-      DISPLAY 'Veuillez saisir l`identifiant du client à supprimer'
+      DISPLAY 'Veuillez saisir l`identifiant du client �  supprimer'
       ACCEPT Wident
       MOVE Wident TO fcl_id
       READ fclient
@@ -317,7 +325,7 @@ STOP RUN.
       SUPPRIMER_ARTICLE.
 
       OPEN I-O fart
-      DISPLAY 'Veuillez saisir l`identifiant de l article à supprimer'
+      DISPLAY 'Veuillez saisir l`identifiant de l article �  supprimer'
       ACCEPT Wident
       MOVE Wident TO far_id
       READ fart
@@ -330,7 +338,7 @@ STOP RUN.
 
       SUPPRIMER_ACHAT.
       OPEN I-O fachat
-      DISPLAY 'Veuillez saisir l`identifiant de l achat à supprimer'
+      DISPLAY 'Veuillez saisir l`identifiant de l achat �  supprimer'
       ACCEPT Wident
       MOVE Wident TO fa_id
       READ fachat
@@ -387,7 +395,6 @@ STOP RUN.
 
 
       RECHERCHE_FIDELITE.
-
       OPEN INPUT fclient
       MOVE 1 TO fcl_fidele
       MOVE 0 TO Wfin
@@ -457,7 +464,7 @@ STOP RUN.
           DISPLAY 'et 2 pour un rajout'
           ACCEPT Wok
         END-PERFORM
-        DISPLAY 'Veuillez saisir la quantité à rajouter / retirer'
+        DISPLAY 'Veuillez saisir la quantité �  rajouter / retirer'
         ACCEPT fa_quantite
         EVALUATE Wok
           WHEN 1
@@ -519,9 +526,9 @@ STOP RUN.
 
       DISPLAY 'Processus Remboursement en cours'
       PERFORM GERER_STOCK
-      DISPLAY 'Veuillez saisir l identifiant de l achat à remboursé'
+      DISPLAY 'Veuillez saisir l identifiant de l achat �  remboursé'
       ACCEPT Wident
-      DISPLAY 'Veuillez saisir la quantité à rembourser'
+      DISPLAY 'Veuillez saisir la quantité �  rembourser'
       ACCEPT Wqte
       OPEN I-O fachat
       MOVE Wident TO fa_id
@@ -561,3 +568,42 @@ STOP RUN.
         END-PERFORM
       END-START
       CLOSE fart.
+
+      AJOUT-COMMANDE.
+      MOVE 0 TO Wfin
+      DISPLAY 'Veuillez saisir les informations de la commande :'
+      PERFORM WITH TEST AFTER UNTIL Wfin = 1
+        DISPLAY 'id client : '
+        ACCEPT fcl_id
+        OPEN INPUT fclient
+        START fclient KEY = fcl_id
+        INVALID KEY
+            DISPLAY 'Aucun client pour cet ID'
+        NOT INVALID KEY
+            MOVE WidClient TO fco_idClient
+            MOVE 1 TO Wfin
+        END-START
+        CLOSE fclient
+      END-PERFORM
+      MOVE 0 TO fco_prix
+      MOVE 0 TO fco_nbArticles
+      PERFORM AJOUT_ID_COMMANDE
+      MOVE fdo_commande TO fco_id
+      WRITE cmdTamp
+      CLOSE fcmd.
+
+      AFFICHAGE_COMMANDE.
+      OPEN INPUT fcmd
+      MOVE 0 TO Wfin
+      PERFORM WITH TEST AFTER UNTIL Wfin=1
+        READ fcmd NEXT
+        AT END
+          MOVE 1 TO Wfin
+          DISPLAY 'Fin de fichier'
+        NOT AT END
+          DISPLAY 'numero commande: ',fco_id
+          DISPLAY 'numero client ',fco_idClient
+          DISPLAY 'nombre d article: ',fco_nbArticles
+          DISPLAY 'prix total',fco_prix
+      END-PERFORM
+      CLOSE fachat.
