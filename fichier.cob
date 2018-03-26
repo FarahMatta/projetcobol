@@ -147,7 +147,7 @@ CLOSE fdonnees
 PERFORM WITH TEST AFTER UNTIL Wf=0
 DISPLAY 'Saisissez le numero de la fonction souhaité:'
 DISPLAY '1:ajout_client, 2:supprimer_client, 3:modifier_infoCl,'
-DISPLAY '4:Recherche_fidlite, 5:effectuer_achat, 6:Echange,'
+DISPLAY '4:Recherche_fidlite, 6:Echange,'
 DISPLAY '7:remboursement, 8:Ajout_article,'
 DISPLAY '9:Fin_stock'
 DISPLAY '10: Gerer_stock,11:supprimer_article'
@@ -164,8 +164,6 @@ DISPLAY '16:supprimer_achat, 17:ajout-commande, 0:quitter'
                 PERFORM MODIFIER_INFOCL
         WHEN 4
                 PERFORM RECHERCHE_FIDELITE
-        WHEN 5
-                PERFORM EFFECTUER_ACHAT
         WHEN 6
                 PERFORM ECHANGE
         WHEN 7
@@ -504,8 +502,7 @@ STOP RUN.
         ELSE
           PERFORM AJOUT_ID_ACHAT
           MOVE fdo_achat TO fa_id
-          DISPLAY 'Veuillez saisir l id de la commande'
-          ACCEPT fa_idcmd
+          MOVE fdo_commande TO fa_idcmd
           MOVE Wqte TO fa_quantite
           MOVE far_id TO fa_idart
           CLOSE fart
