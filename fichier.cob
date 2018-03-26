@@ -153,7 +153,7 @@ DISPLAY '9:Fin_stock'
 DISPLAY '10: Gerer_stock,11:supprimer_article'
 DISPLAY '12:affichage_article,13:affichage_client'
 DISPLAY '14:affichage_achat,15:affichage_commande'
-DISPLAY '16:supprimer_achat, 17:ajout-commande, 0:quitter'
+DISPLAY '16:supprimer_achat, 17:supprimer_commande, 18:ajout-commande, 0:quitter'
         ACCEPT Wf
         EVALUATE Wf
         WHEN 1
@@ -187,6 +187,8 @@ DISPLAY '16:supprimer_achat, 17:ajout-commande, 0:quitter'
         WHEN 16
                 PERFORM SUPPRIMER_ACHAT
         WHEN 17
+                PERFORM SUPPRIMER_COMMANDE
+        WHEN 18
                 PERFORM AJOUT-COMMANDE
         END-EVALUATE
 
@@ -579,7 +581,7 @@ STOP RUN.
         INVALID KEY
             DISPLAY 'Aucun client pour cet ID'
         NOT INVALID KEY
-            MOVE WidClient TO fco_idClient
+            MOVE fcl_id TO fco_idClient
             MOVE 1 TO Wfin
         END-START
         CLOSE fclient
@@ -587,6 +589,7 @@ STOP RUN.
       MOVE 0 TO fco_prix
       MOVE 0 TO fco_nbArticles
       PERFORM AJOUT_ID_COMMANDE
+      DISPLAY fdo_commande
       MOVE fdo_commande TO fco_id
       WRITE cmdTamp
       CLOSE fcmd.
@@ -600,9 +603,26 @@ STOP RUN.
           MOVE 1 TO Wfin
           DISPLAY 'Fin de fichier'
         NOT AT END
+          DISPLAY '--------------------'
           DISPLAY 'numero commande: ',fco_id
-          DISPLAY 'numero client ',fco_idClient
+          DISPLAY 'numero client: ',fco_idClient
           DISPLAY 'nombre d article: ',fco_nbArticles
-          DISPLAY 'prix total',fco_prix
+          DISPLAY 'prix total: ',fco_prix
+          DISPLAY '--------------------'
       END-PERFORM
-      CLOSE fachat.
+      CLOSE fcmd.
+
+
+      SUPPRIMER_COMMANDE.
+
+      OPEN I-O fcmd
+      DISPLAY 'Veuillez saisir l`identifiant de la commande'
+      ACCEPT Wident
+      MOVE Wident TO fco_id
+      READ fcmd
+      INVALID KEY
+        DISPLAY 'Commandeinexistant'
+      NOT INVALID KEY
+        DELETE fcmd RECORD
+      END-READ
+      CLOSE fcmd.
