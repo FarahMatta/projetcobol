@@ -604,9 +604,11 @@ STOP RUN.
           MOVE 1 TO Wfin
           DISPLAY 'Fin de fichier'
         NOT AT END
+          DISPLAY '--------------------'
           DISPLAY 'numero commande: ',fco_id
-          DISPLAY 'numero client ',fco_idClient
+          DISPLAY 'numero client: ',fco_idClient
           DISPLAY 'nombre d article: ',fco_nbArticles
-          DISPLAY 'prix total',fco_prix
+          DISPLAY 'prix total: ',fco_prix
+          DISPLAY '--------------------'
       END-PERFORM
       CLOSE fachat.
