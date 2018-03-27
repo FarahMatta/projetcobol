@@ -147,13 +147,10 @@ CLOSE fdonnees
 PERFORM WITH TEST AFTER UNTIL Wf=0
 DISPLAY 'Saisissez le numero de la fonction souhaité:'
 DISPLAY '1:ajout_client, 2:supprimer_client, 3:modifier_infoCl,'
-DISPLAY '4:Recherche_fidelite', '6:Echange,'
-DISPLAY '7:remboursement, 8:Ajout_article,'
-DISPLAY '9:Fin_stock'
-DISPLAY '10: Gerer_stock,11:supprimer_article'
-DISPLAY '12:affichage_article,13:affichage_client'
-DISPLAY '14:affichage_achat,15:affichage_commande'
-DISPLAY '16:supprimer_achat, 17:supprimer_commande, 18:ajout-commande, 0:quitter'
+DISPLAY '4:affichage_client, 5:Ajout_article, 6:supprimer_article'
+DISPLAY '7:affichage_article, 8:ajout_commande, 9:supprimer_commande,'
+DISPLAY '10:affichage_commande, 11:affichage_achat, 12:Gerer_stock'
+DISPLAY '13:Fin_stock, 14:Recherche_fidelite, 15:Articles_populaires,0:quitter'
         ACCEPT Wf
         EVALUATE Wf
         WHEN 1
@@ -163,33 +160,27 @@ DISPLAY '16:supprimer_achat, 17:supprimer_commande, 18:ajout-commande, 0:quitter
         WHEN 3
                 PERFORM MODIFIER_INFOCL
         WHEN 4
-                PERFORM RECHERCHE_FIDELITE
-        WHEN 6
-                PERFORM ECHANGE
-        WHEN 7
-                PERFORM REMBOURSEMENT
-        WHEN 8
-                PERFORM AJOUT_ARTICLE
-        WHEN 9
-                PERFORM FIN_STOCK
-        WHEN 10
-                PERFORM GERER_STOCK
-        WHEN 11
-                PERFORM SUPPRIMER_ARTICLE
-        WHEN 12
-                PERFORM AFFICHAGE_ARTICLE
-        WHEN 13
                 PERFORM AFFICHAGE_CLIENT
-        WHEN 14
-                PERFORM AFFICHAGE_ACHAT
-        WHEN 15
-                PERFORM AFFICHAGE_COMMANDE
-        WHEN 16
-                PERFORM SUPPRIMER_ACHAT
-        WHEN 17
+        WHEN 5
+                PERFORM AJOUT_ARTICLE
+        WHEN 6
+                PERFORM SUPPRIMER_ARTICLE
+        WHEN 7
+                PERFORM AFFICHAGE_ARTICLE
+        WHEN 8
+                PERFORM AJOUT_COMMANDE
+        WHEN 9
                 PERFORM SUPPRIMER_COMMANDE
-        WHEN 18
-                PERFORM AJOUT-COMMANDE
+        WHEN 10
+                PERFORM AFFICHAGE_COMMANDE
+        WHEN 11
+                PERFORM AFFICHAGE_ACHAT
+        WHEN 12
+                PERFORM GERER_STOCK
+        WHEN 13
+                PERFORM FIN_STOCK
+        WHEN 14
+                PERFORM RECHERCHE_FIDELITE
         END-EVALUATE
 
 
@@ -265,12 +256,14 @@ STOP RUN.
             MOVE 1 TO Wfin
             DISPLAY 'Fin de fichier'
           NOT AT END
+            DISPLAY '--------------------'
             DISPLAY 'numero: ',fcl_id
             DISPLAY 'Nom: ',fcl_nom
             DISPLAY 'prenom: ',fcl_prenom
             DISPLAY 'mail:',fcl_mail
             DISPLAY 'adresse:',fcl_adresse
             DISPLAY 'fidelite:',fcl_fidele
+            DISPLAY '--------------------'
         END-PERFORM
         CLOSE fclient.
 
@@ -283,6 +276,7 @@ STOP RUN.
             MOVE 1 TO Wfin
             DISPLAY 'Fin de fichier'
           NOT AT END
+            DISPLAY '--------------------'
             DISPLAY 'numero: ',far_id
             DISPLAY 'Nom: ',far_nom
             DISPLAY 'prix: ',far_prix
@@ -290,6 +284,7 @@ STOP RUN.
             DISPLAY 'type:',far_type
             DISPLAY 'couleur:',far_couleur
             DISPLAY 'quantite:',far_stock
+            DISPLAY '--------------------'
         END-PERFORM
         CLOSE fart.
 
@@ -302,10 +297,12 @@ STOP RUN.
             MOVE 1 TO Wfin
             DISPLAY 'Fin de fichier'
           NOT AT END
+            DISPLAY '--------------------'
             DISPLAY 'numero: ',fa_id
             DISPLAY 'num commande: ',fa_idcmd
             DISPLAY 'num article: ',fa_idart
             DISPLAY 'quantite:',fa_quantite
+            DISPLAY '--------------------'
         END-PERFORM
         CLOSE fachat.
 
@@ -337,18 +334,6 @@ STOP RUN.
       END-READ
       CLOSE fart.
 
-      SUPPRIMER_ACHAT.
-      OPEN I-O fachat
-      DISPLAY 'Veuillez saisir l`identifiant de l achat �  supprimer'
-      ACCEPT Wident
-      MOVE Wident TO fa_id
-      READ fachat
-      INVALID KEY
-        DISPLAY 'Achat inexistant'
-      NOT INVALID KEY
-        DELETE fachat RECORD
-      END-READ
-      CLOSE fachat.
 
       MODIFIER_INFOCL.
       OPEN I-O fclient
@@ -508,8 +493,6 @@ STOP RUN.
           CLOSE fart
           PERFORM GERER_STOCK
           OPEN I-O fachat
-          DISPLAY 'idTamp',fa_id
-          DISPLAY fa_quantite
           WRITE achatTamp END-WRITE
           CLOSE fachat
         END-IF
@@ -519,29 +502,51 @@ STOP RUN.
 
       ECHANGE.
       DISPLAY 'Processus echange en cours'
-      PERFORM EFFECTUER_ACHAT
-      PERFORM REMBOURSEMENT.
+      PERFORM AJOUT_COMMANDE
+      PERFORM SUPPRIMER_COMMANDE.
 
       REMBOURSEMENT.
 
       DISPLAY 'Processus Remboursement en cours'
       PERFORM GERER_STOCK
-      DISPLAY 'Veuillez saisir l identifiant de l achat �  remboursé'
-      ACCEPT Wident
-      DISPLAY 'Veuillez saisir la quantité �  rembourser'
-      ACCEPT Wqte
       OPEN I-O fachat
-      MOVE Wident TO fa_id
-      READ fachat
-      INVALID KEY
-        DISPLAY 'Achat inexistant'
-      NOT INVALID KEY
-        IF fa_quantite = Wqte THEN
-          DELETE  fachat RECORD
-        ELSE
-          compute fa_quantite= fa_quantite - Wqte
-          REWRITE achatTamp END-REWRITE
-      END-READ
+      EVALUATE Wval
+        WHEN 1
+          MOVE 0 TO Wfin
+          MOVE Wident TO fa_idcmd
+          START fachat KEY = fa_idcmd
+          INVALID KEY
+            DISPLAY 'Il n y a aucun achat lié à cette commande'
+          NOT INVALID KEY
+            PERFORM WITH TEST AFTER UNTIL Wfin = 1
+              READ fachat NEXT
+              AT END
+                MOVE 1 TO Wfin
+                DISPLAY 'Fin de fichier'
+              NOT AT END
+                IF Wident = fa_idcmd THEN
+                  DELETE  fachat RECORD
+                END-IF
+                END-READ
+              END-PERFORM
+          END-START
+        WHEN 2
+          DISPLAY 'Veuillez saisir l identifiant de l achat remboursé'
+          ACCEPT Wident
+          DISPLAY 'Veuillez saisir la quantité rembourser'
+          ACCEPT Wqte
+          MOVE Wident TO fa_id
+          READ fachat
+          INVALID KEY
+            DISPLAY 'Achat inexistant'
+          NOT INVALID KEY
+            IF fa_quantite = Wqte THEN
+              DELETE  fachat RECORD
+            ELSE
+              compute fa_quantite= fa_quantite - Wqte
+              REWRITE achatTamp END-REWRITE
+          END-READ
+        END-EVALUATE
       CLOSE fachat.
 
       FIN_STOCK.
@@ -569,7 +574,7 @@ STOP RUN.
       END-START
       CLOSE fart.
 
-      AJOUT-COMMANDE.
+      AJOUT_COMMANDE.
       OPEN I-O fcmd
       MOVE 0 TO Wfin
       MOVE 0 TO fco_prix
@@ -592,7 +597,6 @@ STOP RUN.
 
       PERFORM AJOUT_ID_COMMANDE
       MOVE fdo_commande TO fco_id
-
 
       DISPLAY 'Ajout des achats de cette commande'
       MOVE 1 TO Wfin
@@ -655,11 +659,22 @@ STOP RUN.
       OPEN I-O fcmd
       DISPLAY 'Veuillez saisir l`identifiant de la commande'
       ACCEPT Wident
-      MOVE Wident TO fco_id
-      READ fcmd
-      INVALID KEY
-        DISPLAY 'Commande inexistante'
-      NOT INVALID KEY
-        DELETE fcmd RECORD
-      END-READ
+      PERFORM WITH TEST AFTER UNTIL Wval = 1 OR Wval = 2
+        DISPLAY 'Veuillez saisir 1 pour rembourser toute la commande ou 2'
+        DISPLAY 'Pour rembourser une partie de la commande'
+        ACCEPT Wval
+      END-PERFORM
+      EVALUATE Wval
+        WHEN 1
+          PERFORM REMBOURSEMENT
+          MOVE Wident TO fco_id
+          READ fcmd
+          INVALID KEY
+            DISPLAY 'Commande inexistante'
+          NOT INVALID KEY
+            DELETE fcmd RECORD
+          END-READ
+        WHEN 2
+          PERFORM REMBOURSEMENT
+      END-EVALUATE
       CLOSE fcmd.
