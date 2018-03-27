@@ -147,7 +147,7 @@ CLOSE fdonnees
 PERFORM WITH TEST AFTER UNTIL Wf=0
 DISPLAY 'Saisissez le numero de la fonction souhaité:'
 DISPLAY '1:ajout_client, 2:supprimer_client, 3:modifier_infoCl,'
-DISPLAY '4:Recherche_fidlitet', 6:Echange,'
+DISPLAY '4:Recherche_fidlitet', '6:Echange,'
 DISPLAY '7:remboursement, 8:Ajout_article,'
 DISPLAY '9:Fin_stock'
 DISPLAY '10: Gerer_stock,11:supprimer_article'
@@ -399,12 +399,11 @@ STOP RUN.
       OPEN INPUT fclient
       MOVE 1 TO fcl_fidele
       MOVE 0 TO Wfin
-      DISPLAY 'AFFECTATION VARIABLE REUSSI'
+      
       START fclient KEY = fcl_fidele
       INVALID KEY
         DISPLAY ' clients fidéles inexistants'
       NOT INVALID KEY
-        DISPLAY 'ON EST DANS LA ZONE'
         PERFORM WITH TEST AFTER UNTIL Wfin=1
           READ fclient NEXT
           AT END
